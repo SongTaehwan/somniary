@@ -1,0 +1,17 @@
+//
+//  SomniaryApp.swift
+//  Somniary
+//
+//  Created by 송태환 on 9/10/25.
+//
+
+import SwiftUI
+
+@main
+struct SomniaryApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
