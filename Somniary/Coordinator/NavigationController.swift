@@ -10,6 +10,7 @@ import SwiftUI
 /// NavigationStack 상태 관리 객체
 final class NavigationController<Route: Routable>: ObservableObject {
     /// 네비게이션 화면 스택
+    /// 값이 추가될 때 마다 다음 화면으로 이동
     @Published var path = NavigationPath()
 
     /// Overlay 라우트 (NavigationType.present)
@@ -27,21 +28,24 @@ final class NavigationController<Route: Routable>: ObservableObject {
         self.onDismissPresentedRoute = onDissmissPresentedRoute
     }
 
+    /// 호출 시 마다 다음 화면 전환
     func addRoute(_ route: Route) {
         self.path.append(route)
     }
 
+    /// 이전 화면으로 전환
     func removeLastRoute() {
         self.path.removeLast()
     }
 
+    /// 첫 화면으로 이동
     func removeAllRoutes() {
         self.path.removeLast(self.path.count)
     }
 
     /// sheet, fullScreenCover 를 노출시키는데 사용됨.
-    /// presentedRoute 값 할당 시  매개변수와 presentedRoute 내 PresentationType 이 일치하는 경우
-    /// sheet 또는 fullScreenCover 를 화면에 노출시킴
+    /// presentedRoute 값이 변경될 때 마다 호출됨
+    /// 매개변수와 presentedRoute 내 PresentationType 이 일치하는 경우 sheet 또는 fullScreenCover 를 화면에 노출시킴
     func isPresnting(with type: PresentationType) -> Binding<Bool> {
         return Binding<Bool> { [weak self] in
             guard let currentType = self?.presentedRoute?.navigationType.presentationType else {
@@ -56,6 +60,5 @@ final class NavigationController<Route: Routable>: ObservableObject {
             // 상위 전파
             self.onDismissPresentedRoute(self)
         }
-
     }
 }
