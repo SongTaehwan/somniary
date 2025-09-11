@@ -1,5 +1,5 @@
 //
-//  FlowCoordinator.swift
+//  FlowCoordinatorProtocol.swift
 //  Somniary
 //
 //  Created by 송태환 on 9/11/25.
