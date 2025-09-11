@@ -33,10 +33,11 @@ struct NavigationFlowView<Coordinator: FlowCoordinator>: View {
             presentableView
         }
         // 자식 코디네이터 플로우
-        .sheet(isPresented: coordinator.shouldPresentChild(from: navigationController)) {
-            if let childCoordinator = coordinator.childCoordinator {
-                AnyView(childCoordinator.rootView)
-            }
+        .sheet(isPresented: coordinator.shouldPresentChild(from: navigationController, with: .sheet)) {
+            childCoordinatorView
+        }
+        .fullScreenCover(isPresented: coordinator.shouldPresentChild(from: navigationController, with: .fullScreenCover)) {
+            childCoordinatorView
         }
     }
 
@@ -49,6 +50,13 @@ struct NavigationFlowView<Coordinator: FlowCoordinator>: View {
             ) {
                 coordinator.destination(for: route)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var childCoordinatorView: some View {
+        if let childCoordinator = coordinator.childCoordinator {
+            AnyView(childCoordinator.rootView)
         }
     }
 }

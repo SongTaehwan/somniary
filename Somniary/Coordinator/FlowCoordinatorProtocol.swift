@@ -17,8 +17,10 @@ protocol FlowCoordinator: Coordinator {
     var navigationControllers: [NavigationController<Route>] { get set }
 
     /// 자식 코디네이터는 독립된 Flow 의 관리 목적으로 사용됨
-    /// 코디네이터별 관심사 분리
     var childCoordinator: (any Coordinator)? { get set }
+
+    /// 자식 코디네이터 노출 방식
+    var childPresentationType: PresentationType? { get set }
 
     /// 라우팅 분기점
     @MainActor @ViewBuilder func destination(for route: Route) -> Destination
@@ -115,9 +117,10 @@ extension FlowCoordinator {
 
     /// 자식 코디네이터 플로우 노출
     /// 객체 관점에서는 addChild 와 동일
-    func present(child: any Coordinator) {
+    func present(child: any Coordinator, with presentationType: PresentationType? = nil) {
         child.finishDelegate = self
         self.childCoordinator = child
+        self.childPresentationType = presentationType
     }
 
     /// 자식 코디네이터 플로우 종료
@@ -144,10 +147,12 @@ extension FlowCoordinator {
 
     /// 자식 코디네이터를 sheet, fullScreenCover 를 통해 노출시키는데 사용됨.
     /// childCoordinator 값이 변경될 때 마다 호출됨
-    func shouldPresentChild(from navigationController: NavigationController<Route>) -> Binding<Bool> {
+    func shouldPresentChild(from navigationController: NavigationController<Route>, with type: PresentationType) -> Binding<Bool> {
         return Binding<Bool> { [weak self] in
             guard let self else { return false }
-            return self.childCoordinator != nil && self.isTopNavigationController(navigationController)
+            return self.childCoordinator != nil
+            && self.childPresentationType == type
+            && self.isTopNavigationController(navigationController)
         } set: { [weak self] newValue in
             guard let self, !newValue else { return }
             self.dismissChild()
