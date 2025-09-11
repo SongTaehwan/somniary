@@ -20,6 +20,7 @@ protocol FlowCoordinator: Coordinator {
     var childCoordinator: (any Coordinator)? { get set }
 
     /// 자식 코디네이터 노출 방식
+    /// 설정하지 않으면 sheet 방식으로 열림
     var childPresentationType: PresentationType? { get set }
 
     /// 라우팅 분기점
@@ -120,7 +121,10 @@ extension FlowCoordinator {
     func present(child: any Coordinator, with presentationType: PresentationType? = nil) {
         child.finishDelegate = self
         self.childCoordinator = child
-        self.childPresentationType = presentationType
+
+        if let tyle = presentationType {
+            self.childPresentationType = presentationType
+        }
     }
 
     /// 자식 코디네이터 플로우 종료
@@ -151,7 +155,7 @@ extension FlowCoordinator {
         return Binding<Bool> { [weak self] in
             guard let self else { return false }
             return self.childCoordinator != nil
-            && self.childPresentationType == type
+            && (self.childPresentationType ?? .sheet()) == type
             && self.isTopNavigationController(navigationController)
         } set: { [weak self] newValue in
             guard let self, !newValue else { return }

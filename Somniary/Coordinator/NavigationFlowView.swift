@@ -26,15 +26,19 @@ struct NavigationFlowView<Coordinator: FlowCoordinator>: View {
                     self.coordinator.destination(for: route)
                 }
         }
-        .sheet(isPresented: navigationController.isPresnting(with: .sheet)) {
+        .sheet(isPresented: navigationController.isPresnting(with: .sheet())) {
+            let detents = navigationController.presentedRoute?.navigationType.presentationType?.detents
             presentableView
+                .presentationDetents(detents ?? .init())
         }
         .fullScreenCover(isPresented: navigationController.isPresnting(with: .fullScreenCover)) {
             presentableView
         }
         // 자식 코디네이터 플로우
-        .sheet(isPresented: coordinator.shouldPresentChild(from: navigationController, with: .sheet)) {
+        .sheet(isPresented: coordinator.shouldPresentChild(from: navigationController, with: .sheet())) {
+            let detents = coordinator.childPresentationType?.detents
             childCoordinatorView
+                .presentationDetents(detents ?? .init())
         }
         .fullScreenCover(isPresented: coordinator.shouldPresentChild(from: navigationController, with: .fullScreenCover)) {
             childCoordinatorView
