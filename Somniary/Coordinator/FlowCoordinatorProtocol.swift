@@ -122,8 +122,8 @@ extension FlowCoordinator {
         child.finishDelegate = self
         self.childCoordinator = child
 
-        if let tyle = presentationType {
-            self.childPresentationType = presentationType
+        if let type = presentationType {
+            self.childPresentationType = type
         }
     }
 
