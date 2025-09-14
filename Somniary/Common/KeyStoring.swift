@@ -17,7 +17,8 @@ protocol KeyStoring {
     func clear(keys: [ValueKey])
 }
 
-extension KeyStoring where ValueKey: RawRepresentable, ValueKey.RawValue == String {
+// MARK: associatedtype 이 enum 타입인 경우를 가정
+extension KeyStoring where ValueKey: RawRepresentable, ValueKey.RawValue == String, ValueKey: CaseIterable, ValueKey.AllCases == [ValueKey] {
 
     func save<T: Codable>(_ value: T, for key: ValueKey) {
         let data = try? JSONEncoder().encode(value)
@@ -32,8 +33,13 @@ extension KeyStoring where ValueKey: RawRepresentable, ValueKey.RawValue == Stri
         return try? JSONDecoder().decode(T.self, from: data)
     }
 
+    /// 명시적 타입 지정을 통한 구조체 불러오기
+    func retrieve<T: Decodable>(type: T.Type, for key: ValueKey) -> T? {
+        return retrieve(for: key)
+    }
+
     /// 복수 키 삭제
-    func clear(keys: [ValueKey]) {
+    func clear(keys: [ValueKey] = ValueKey.allCases) {
         keys.forEach({ UserDefaults.standard.removeObject(forKey: $0.rawValue) })
     }
 
