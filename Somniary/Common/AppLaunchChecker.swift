@@ -17,7 +17,7 @@ struct AppLaunchChecker: AppLaunchChecking {
     
     let isFirstLaunch: Bool
     
-    private static let defaultKey = "app.launch.first"
+    private static let defaultKey = "app.launch.first.key"
 
     init(storage: UserDefaults = .standard, key: String = AppLaunchChecker.defaultKey) {
         self.isFirstLaunch = {
