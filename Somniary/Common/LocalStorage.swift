@@ -7,12 +7,6 @@
 
 import Foundation
 
-final class LocalStorage: KeyStoring {
-    static let shared = LocalStorage()
-
-    enum ValueKey: String, CaseIterable {
-        // TODO: 로컬 저장소에 저장할 키 정의
-        case accessToken
-        case refreshToken
-    }
+final class LocalStorage<Key>: KeyStoring where Key: RawRepresentable, Key.RawValue == String, Key: CaseIterable, Key.AllCases == [Key] {
+    typealias ValueKey = Key
 }

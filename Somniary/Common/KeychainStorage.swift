@@ -8,16 +8,10 @@
 import KeychainAccess
 import Foundation
 
-final class KeychainStorage: KeyStoring {
-
-    static let shared = KeychainStorage()
+final class KeychainStorage<Key>: KeyStoring where Key: RawRepresentable, Key.RawValue == String, Key: CaseIterable, Key.AllCases == [Key] {
 
     /// 어플리케이션 내 사용되는 키 정의
-    enum ValueKey: String, CaseIterable {
-        case accessToken
-        case refreshToken
-        case tokenPair
-    }
+    typealias ValueKey = Key
 
     private let service: String
 
@@ -26,7 +20,7 @@ final class KeychainStorage: KeyStoring {
     }
 
     /// 원자성 보장이 필요한 경우 사용 구조체로 저장할 것
-    func save<T: Codable>(_ value: T, for key: ValueKey) {
+    func save<T: Codable>(_ value: T, for key: Key) {
         do {
             let data = try JSONEncoder().encode(value)
             try Keychain(service: service)
@@ -50,15 +44,8 @@ final class KeychainStorage: KeyStoring {
         }
     }
 
-    /// 저장된 값 불러오기
-    func retrieve(for key: ValueKey) -> String? {
-        let keychain = Keychain(service: service)
-            .accessibility(.whenUnlocked)
-        return try? keychain.get(key.rawValue)
-    }
-
     /// 구조체 불러오기
-    func retrieve<T: Decodable>(for key: ValueKey) -> T? {
+    func retrieve<T: Decodable>(for key: Key) -> T? {
         let keychain = Keychain(service: service)
             .accessibility(.whenUnlocked)
 
@@ -68,9 +55,10 @@ final class KeychainStorage: KeyStoring {
 
         return try? JSONDecoder().decode(T.self, from: data)
     }
+    
 
     /// 복수/전체 키 제거
-    func clear(keys: [ValueKey] = ValueKey.allCases) {
+    func clear(keys: [Key] = Key.allCases) {
         let keychain = Keychain(service: service).accessibility(.whenUnlocked)
 
         keys.forEach { key in
@@ -79,7 +67,7 @@ final class KeychainStorage: KeyStoring {
     }
 
     /// 단일 키 제거
-    func clear(key: ValueKey) {
+    func clear(key: Key) {
         self.clear(keys: [key])
     }
 }
