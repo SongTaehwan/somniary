@@ -7,22 +7,28 @@
 
 import Foundation
 
-struct AppLaunchChecker {
+protocol AppLaunchChecking {
+    var isFirstLaunch: Bool { get }
+}
+
+struct AppLaunchChecker: AppLaunchChecking {
+    
     static let shared = AppLaunchChecker()
-
+    
     let isFirstLaunch: Bool
+    
+    private static let defaultKey = "app.launch.first.key"
 
-    init(storage: UserDefaults = .standard) {
+    init(storage: UserDefaults = .standard, key: String = AppLaunchChecker.defaultKey) {
         self.isFirstLaunch = {
-            let key = "app.launch.first.key"
-            let value = storage.bool(forKey: key)
+            let value = storage.value(forKey: key) as? Bool
 
-            if value == false {
-                storage.setValue(true, forKey: key)
+            if value == nil {
+                storage.setValue(false, forKey: key)
                 return true
             }
 
-            return true
+            return value ?? false
         }()
     }
 }
