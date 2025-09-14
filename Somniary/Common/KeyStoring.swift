@@ -12,18 +12,24 @@ import Foundation
 protocol KeyStoring {
     associatedtype ValueKey
 
-    func save(_ value: String, for key: ValueKey)
-    func retrieve(for key: ValueKey) -> String?
+    func save<T: Codable>(_ value: T, for key: ValueKey)
+    func retrieve<T: Decodable>(for key: ValueKey) -> T?
     func clear(keys: [ValueKey])
 }
 
 extension KeyStoring where ValueKey: RawRepresentable, ValueKey.RawValue == String {
-    func save(_ value: String, for key: ValueKey) {
-        UserDefaults.standard.set(value, forKey: key.rawValue)
+
+    func save<T: Codable>(_ value: T, for key: ValueKey) {
+        let data = try? JSONEncoder().encode(value)
+        UserDefaults.standard.set(data, forKey: key.rawValue)
     }
 
-    func retrieve(for key: ValueKey) -> String? {
-        return UserDefaults.standard.string(forKey: key.rawValue)
+    func retrieve<T: Decodable>(for key: ValueKey) -> T? {
+        guard let data = UserDefaults.standard.data(forKey: key.rawValue) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(T.self, from: data)
     }
 
     /// 복수 키 삭제
