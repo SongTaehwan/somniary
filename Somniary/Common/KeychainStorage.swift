@@ -16,6 +16,7 @@ final class KeychainStorage: KeyStoring {
     enum ValueKey: String, CaseIterable {
         case accessToken
         case refreshToken
+        case tokenPair
     }
 
     private let service: String
@@ -24,15 +25,14 @@ final class KeychainStorage: KeyStoring {
         self.service = service
     }
 
-    /// 키 값 저장
-    func save(_ value: String, for key: ValueKey) {
+    /// 원자성 보장이 필요한 경우 사용 구조체로 저장할 것
+    func save<T: Codable>(_ value: T, for key: ValueKey) {
         do {
+            let data = try JSONEncoder().encode(value)
             try Keychain(service: service)
                 .accessibility(.whenUnlocked)
-                .set(value, key: key.rawValue)
+                .set(data, key: key.rawValue)
         } catch let status as Status {
-            // KeychainAccess에서 제공하는 OSStatus 래핑 타입
-            // TODO: Logger 로 전환
             switch status {
             case .duplicateItem:
                 print("⚠️ Duplicate item: 이미 같은 키 값이 있음")
@@ -55,6 +55,18 @@ final class KeychainStorage: KeyStoring {
         let keychain = Keychain(service: service)
             .accessibility(.whenUnlocked)
         return try? keychain.get(key.rawValue)
+    }
+
+    /// 구조체 불러오기
+    func retrieve<T: Decodable>(for key: ValueKey) -> T? {
+        let keychain = Keychain(service: service)
+            .accessibility(.whenUnlocked)
+
+        guard let data = try? keychain.getData(key.rawValue) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(T.self, from: data)
     }
 
     /// 복수/전체 키 제거
