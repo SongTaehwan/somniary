@@ -7,15 +7,18 @@
 
 import Foundation
 
+enum TokenStorageKey: String, CaseIterable {
+    case tokenPair
+}
+
+typealias TokenStoring = any KeyStoring<TokenStorageKey>
+
 // TODO: Register into DIC
 // TODO: actor 사용해 리펙토링
 final class TokenRepository {
 
-    static let shared = TokenRepository()
-
     // MARK: Private Props
-    private var token: TokenEntity?
-    private let storage: KeychainStorage
+    private let storage: TokenStoring
     private let queueKey = DispatchSpecificKey<Void>()
     private let queueContext: Void = ()
     private let queue = DispatchQueue(
@@ -23,8 +26,10 @@ final class TokenRepository {
         attributes: .concurrent
     )
 
+    private var token: TokenEntity?
+
     // MARK: 생성자
-    init(storage: KeychainStorage = .shared, appLaunchChecker: AppLaunchChecker = .shared) {
+    init(storage: TokenStoring, appLaunchChecker: AppLaunchChecking) {
         self.storage = storage
         self.queue.setSpecific(key: self.queueKey, value: self.queueContext)
 
@@ -34,9 +39,8 @@ final class TokenRepository {
         }
     }
 
-    func restore() {
+    private func restore() {
         if let tokenEntity: TokenEntity = self.storage.retrieve(for: .tokenPair) {
-            // RC 방지
             self.queue.async(flags: .barrier) { [weak self] in
                 self?.token = tokenEntity
             }
@@ -74,16 +78,18 @@ extension TokenRepository {
     /// 토큰 정보 업데이트
     func updateToken(_ token: TokenEntity) {
         self.queue.async(flags: .barrier) { [weak self] in
-            self?.token = token
-            self?.storage.save(token, for: .tokenPair)
+            guard let self else { return }
+            self.token = token
+            try? self.storage.save(token, for: .tokenPair)
         }
     }
 
     /// 저장된 토큰 정보 제거
     func clear() {
         self.queue.async(flags: .barrier) { [weak self] in
-            self?.token = nil
-            self?.storage.clear(keys: [.tokenPair])
+            guard let self else { return }
+            self.token = nil
+            self.storage.clear(keys: [.tokenPair])
         }
     }
 }
