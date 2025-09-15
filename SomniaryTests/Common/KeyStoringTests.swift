@@ -35,7 +35,10 @@ final class KeyStoringTests: XCTestCase {
 
     private var storage: TestKeyStorage!
 
+    // MARK: - Setup & Teardown
+
     override func setUpWithError() throws {
+        try super.setUpWithError()
         storage = TestKeyStorage()
         storage.clear()
     }
@@ -43,12 +46,13 @@ final class KeyStoringTests: XCTestCase {
     override func tearDownWithError() throws {
         storage.clear()
         storage = nil
+        try super.tearDownWithError()
     }
 
     // MARK: - 기본 저장/조회 테스트
 
     /// 문자열 저장 및 조회 테스트
-    func testSaveAndRetrieveString() throws {
+    func test_save_성공적으로_문자열을_저장하고_조회한다() throws {
         // Given
         let testValue = "Hello, KeyStoring!"
 
@@ -61,7 +65,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 정수 저장 및 조회 테스트
-    func testSaveAndRetrieveInt() throws {
+    func test_save_성공적으로_정수를_저장하고_조회한다() throws {
         // Given
         let testValue = 42
 
@@ -74,7 +78,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 불리언 저장 및 조회 테스트
-    func testSaveAndRetrieveBool() throws {
+    func test_save_성공적으로_불리언을_저장하고_조회한다() throws {
         // Given
         let testValue = true
 
@@ -87,7 +91,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 커스텀 구조체 저장 및 조회 테스트
-    func testSaveAndRetrieveCustomStruct() throws {
+    func test_save_성공적으로_커스텀_구조체를_저장하고_조회한다() throws {
         // Given
         let testModel = TestModel(id: 1, name: "Test User", isActive: true)
 
@@ -100,7 +104,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 배열 저장 및 조회 테스트
-    func testSaveAndRetrieveArray() throws {
+    func test_save_성공적으로_배열을_저장하고_조회한다() throws {
         // Given
         let testArray = ["apple", "banana", "cherry"]
 
@@ -113,7 +117,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 명시적 타입 지정 조회 테스트
-    func testRetrieveWithExplicitType() throws {
+    func test_retrieve_명시적_타입_지정으로_정확히_조회한다() throws {
         // Given
         let testValue = 100
         try storage.save(testValue, for: .testInt)
@@ -128,7 +132,7 @@ final class KeyStoringTests: XCTestCase {
     // MARK: - 에러 처리 테스트
 
     /// 존재하지 않는 키 조회 시 nil 반환 테스트
-    func testRetrieveNonExistentKey() {
+    func test_retrieve_존재하지_않는_키에_대해_nil을_반환한다() {
         // When
         let retrievedValue: String? = storage.retrieve(for: .nonExistentKey)
 
@@ -137,7 +141,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 잘못된 타입으로 디코딩 시도 테스트
-    func testRetrieveWithWrongType() throws {
+    func test_retrieve_잘못된_타입으로_디코딩_시도시_nil을_반환한다() throws {
         // Given - 문자열 저장
         try storage.save("not a number", for: .testString)
 
@@ -149,7 +153,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 동일 키에 다른 타입 데이터 덮어쓰기 테스트
-    func testOverwriteWithDifferentType() throws {
+    func test_save_동일_키에_다른_타입_데이터로_덮어쓰기한다() throws {
         // Given - 먼저 문자열 저장
         try storage.save("original string", for: .testString)
 
@@ -167,7 +171,7 @@ final class KeyStoringTests: XCTestCase {
     // MARK: - 삭제 기능 테스트
 
     /// 단일 키 삭제 테스트
-    func testClearSingleKey() throws {
+    func test_clear_단일_키를_성공적으로_삭제한다() throws {
         // Given
         try storage.save("test value", for: .testString)
         try storage.save(42, for: .testInt)
@@ -184,7 +188,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 복수 키 삭제 테스트
-    func testClearMultipleKeys() throws {
+    func test_clear_복수_키를_성공적으로_삭제한다() throws {
         // Given
         try storage.save("test1", for: .testString)
         try storage.save(42, for: .testInt)
@@ -204,7 +208,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 전체 키 삭제 테스트 (기본값 사용)
-    func testClearAllKeys() throws {
+    func test_clear_전체_키를_성공적으로_삭제한다() throws {
         // Given
         try storage.save("test1", for: .testString)
         try storage.save(42, for: .testInt)
@@ -224,7 +228,7 @@ final class KeyStoringTests: XCTestCase {
     }
 
     /// 존재하지 않는 키 삭제 시 에러 없이 처리 테스트
-    func testClearNonExistentKey() {
+    func test_clear_존재하지_않는_키_삭제시_에러_없이_처리한다() {
         // When & Then - 에러 없이 실행되어야 함
         XCTAssertNoThrow(storage.clear(.nonExistentKey), "존재하지 않는 키 삭제 시 에러가 발생하지 않아야 함")
     }
@@ -232,7 +236,7 @@ final class KeyStoringTests: XCTestCase {
     // MARK: - 실제 TokenEntity 테스트
 
     /// 실제 앱에서 사용하는 TokenEntity 저장/조회 테스트
-    func testTokenEntityStorage() throws {
+    func test_save_실제_TokenEntity를_성공적으로_저장하고_조회한다() throws {
         // Given
         let token = TokenEntity(accessToken: "access_token_123", refreshToken: "refresh_token_456")
 
