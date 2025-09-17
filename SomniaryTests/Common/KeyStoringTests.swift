@@ -10,7 +10,7 @@ import XCTest
 
 final class KeyStoringTests: XCTestCase {
 
-    // MARK: - Test Storage Implementation
+    // MARK: - Test Fixtures
 
     enum TestKey: String, CaseIterable {
         case testString = "test_string"
