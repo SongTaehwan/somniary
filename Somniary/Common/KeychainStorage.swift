@@ -15,6 +15,7 @@ enum KeychainError: LocalizedError {
     case invalidData
     case accessDenied
     case unexpectedError(String)
+    case updateFailed(String)
 
     // KeyStoringError의 기능도 포함
     case encodingFailed(String)
@@ -36,6 +37,8 @@ enum KeychainError: LocalizedError {
             return "인코딩 실패: \(message)"
         case .decodingFailed(let message):
             return "디코딩 실패: \(message)"
+        case .updateFailed(let message):
+            return "업데이트 실패: \(message)"
         }
     }
 }
@@ -45,46 +48,84 @@ final class KeychainStorage<Key>: KeyStoring where Key: RawRepresentable, Key.Ra
     /// 어플리케이션 내 사용되는 키 정의
     typealias ValueKey = Key
 
+    // MARK: Private Props
     private let service: String
+    private let queue = DispatchQueue(label: "app.somniary.KeychainStorage.rwlock", attributes: .concurrent)
+    private let queueKey = DispatchSpecificKey<Void>()
+    private let queueContext: Void = ()
 
+    // MARK: 생성자
     init(service: String = Bundle.main.bundleIdentifier ?? "default.service") {
         self.service = service
+        self.queue.setSpecific(key: self.queueKey, value: self.queueContext)
     }
+
+    // MARK: Public methods
 
     /// 원자성 보장이 필요한 경우 사용 구조체로 저장할 것
     func save<T: Codable>(_ value: T, for key: Key) throws {
-        guard let data = try? JSONEncoder().encode(value) else {
-            throw KeychainError.encodingFailed("Encoding failed")
-        }
-
-        do {
-            try Keychain(service: service)
-                .accessibility(.whenUnlocked)
-                .set(data, key: key.rawValue)
-        } catch let status as Status {
-            switch status {
-            case .duplicateItem:
-                throw KeychainError.duplicateItem
-            case .authFailed:
-                print("⚠️ 인증 실패: 디바이스 잠금 등")
-                throw KeychainError.accessDenied
-            case .interactionNotAllowed:
-                print("⚠️ 상호작용 불가: 백그라운드 상태에서 접근 시도")
-                throw KeychainError.accessDenied
-            case .param:
-                print("⚠️ 잘못된 파라미터 전달")
-                throw KeychainError.invalidData
-            default:
-                throw KeychainError.unexpectedError(status.localizedDescription)
+        try queue.sync(flags: .barrier) {
+            guard let data = try? JSONEncoder().encode(value) else {
+                throw KeychainError.encodingFailed("Encoding failed")
             }
-        } catch {
-            print("⚠️ 기타 오류: \(error)")
-            throw KeychainError.unexpectedError(error.localizedDescription)
+
+            do {
+                try Keychain(service: service)
+                    .accessibility(.whenUnlocked)
+                    .set(data, key: key.rawValue)
+            } catch let status as Status {
+                switch status {
+                case .duplicateItem:
+                    try updateExistingItem(data: data, key: key)
+                case .authFailed:
+                    print("⚠️ 인증 실패: 디바이스 잠금 등")
+                    throw KeychainError.accessDenied
+                case .interactionNotAllowed:
+                    print("⚠️ 상호작용 불가: 백그라운드 상태에서 접근 시도")
+                    throw KeychainError.accessDenied
+                case .param:
+                    print("⚠️ 잘못된 파라미터 전달")
+                    throw KeychainError.invalidData
+                default:
+                    throw KeychainError.unexpectedError(status.localizedDescription)
+                }
+            } catch {
+                throw KeychainError.unexpectedError(error.localizedDescription)
+            }
         }
     }
 
     /// 구조체 불러오기
     func retrieve<T: Decodable>(for key: Key) -> T? {
+        // 같은 queue 에서 진입하는 경우
+        if DispatchQueue.getSpecific(key: self.queueKey) != nil {
+            return self.retrieveData(for: key)
+        }
+
+        return queue.sync {
+            return self.retrieveData(for: key)
+        }
+    }
+
+    /// 복수/전체 키 제거
+    func clear(keys: [Key] = Key.allCases) {
+        queue.sync(flags: .barrier) {
+            let keychain = Keychain(service: service).accessibility(.whenUnlocked)
+            
+            keys.forEach { key in
+                keychain[key.rawValue] = nil
+            }
+        }
+    }
+
+    /// 단일 키 제거
+    func clear(key: Key) {
+        self.clear(keys: [key])
+    }
+
+    // MARK: Private Methods
+
+    private func retrieveData<T: Decodable>(for key: Key) -> T? {
         let keychain = Keychain(service: service)
             .accessibility(.whenUnlocked)
 
@@ -95,17 +136,17 @@ final class KeychainStorage<Key>: KeyStoring where Key: RawRepresentable, Key.Ra
         return try? JSONDecoder().decode(T.self, from: data)
     }
 
-    /// 복수/전체 키 제거
-    func clear(keys: [Key] = Key.allCases) {
+    private func updateExistingItem(data: Data, key: Key) throws {
+        // 삭제 후 재저장으로 업데이트 구현 (이미 queue.sync 내부에서 호출됨)
         let keychain = Keychain(service: service).accessibility(.whenUnlocked)
-
-        keys.forEach { key in
-            keychain[key.rawValue] = nil
+        
+        // 원자적 업데이트를 위한 단계별 처리
+        keychain[key.rawValue] = nil
+        
+        do {
+            try keychain.set(data, key: key.rawValue)    
+        } catch {
+            throw KeychainError.updateFailed(error.localizedDescription)
         }
-    }
-
-    /// 단일 키 제거
-    func clear(key: Key) {
-        self.clear(keys: [key])
     }
 }
