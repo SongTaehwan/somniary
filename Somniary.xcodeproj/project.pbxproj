@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E4D48C7A2E740DC700D657D9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E4D48C792E740DC700D657D9 /* KeychainAccess */; };
+		E4F501F72E78001A001E0B58 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E4F501F62E78001A001E0B58 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +32,7 @@
 		E413834F2E713AE400F9A185 /* Somniary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Somniary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E413835C2E713AE400F9A185 /* SomniaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E41383662E713AE400F9A185 /* SomniaryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4F501F62E78001A001E0B58 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +82,7 @@
 		E41383462E713AE400F9A185 = {
 			isa = PBXGroup;
 			children = (
+				E4F501F62E78001A001E0B58 /* .gitignore */,
 				E41383512E713AE400F9A185 /* Somniary */,
 				E413835F2E713AE400F9A185 /* SomniaryTests */,
 				E41383692E713AE400F9A185 /* SomniaryUITests */,
@@ -221,6 +224,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4F501F72E78001A001E0B58 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
