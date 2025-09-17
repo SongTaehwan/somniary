@@ -8,20 +8,21 @@
 import Foundation
 
 /// 키 저장소 프로토콜
-/// 기본 구현체는 UserDefaults
-protocol KeyStoring {
+protocol KeyStoring<ValueKey> {
     associatedtype ValueKey
 
-    func save<T: Codable>(_ value: T, for key: ValueKey)
+    /// 명령적인 성격. 실패 시 사용자 액션 요구
+    func save<T: Codable>(_ value: T, for key: ValueKey) throws
+    /// 질의적인 성격. 다양한 처리 방식 요구
     func retrieve<T: Decodable>(for key: ValueKey) -> T?
     func clear(keys: [ValueKey])
 }
 
-// MARK: associatedtype 이 enum 타입인 경우를 가정
+// MARK: UserDefaults 기반 기본 구현
 extension KeyStoring where ValueKey: RawRepresentable, ValueKey.RawValue == String, ValueKey: CaseIterable, ValueKey.AllCases == [ValueKey] {
 
-    func save<T: Codable>(_ value: T, for key: ValueKey) {
-        let data = try? JSONEncoder().encode(value)
+    func save<T: Codable>(_ value: T, for key: ValueKey) throws {
+        let data = try JSONEncoder().encode(value)
         UserDefaults.standard.set(data, forKey: key.rawValue)
     }
 
@@ -30,6 +31,7 @@ extension KeyStoring where ValueKey: RawRepresentable, ValueKey.RawValue == Stri
             return nil
         }
 
+        // TODO: 디코딩 실패 에러 핸들링
         return try? JSONDecoder().decode(T.self, from: data)
     }
 

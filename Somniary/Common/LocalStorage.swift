@@ -7,6 +7,6 @@
 
 import Foundation
 
-final class LocalStorage<Key>: KeyStoring where Key: RawRepresentable, Key.RawValue == String, Key: CaseIterable, Key.AllCases == [Key] {
+struct LocalStorage<Key>: KeyStoring where Key: RawRepresentable, Key.RawValue == String, Key: CaseIterable, Key.AllCases == [Key] {
     typealias ValueKey = Key
 }
