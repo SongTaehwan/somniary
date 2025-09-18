@@ -13,7 +13,6 @@ final class AppCoordinator: ObservableObject {
 
     private let deeplinkCoordinator = DeeplinkCoordinator()
     private var startCoordinator: any Coordinator
-    // TODO: add tabBarCoordinator
 
     init(appLaunchChecker: AppLaunchChecking, tokenRepository: TokenReposable) {
         // TODO: 딥링크를 지원하는 coordinator 등록
@@ -22,7 +21,7 @@ final class AppCoordinator: ObservableObject {
         if appLaunchChecker.isFirstLaunch || tokenRepository.getAccessToken() == nil {
             self.startCoordinator = EmptyCoordinator()
         } else {
-            self.startCoordinator = EmptyCoordinator()
+            self.startCoordinator = TabBarCoordinator()
         }
     }
 
