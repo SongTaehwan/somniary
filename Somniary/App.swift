@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct SomniaryApp: App {
+
+    @StateObject private var coordinator = AppCoordinator(
+        appLaunchChecker: AppLaunchChecker.shared,
+        tokenRepository: TokenRepository.shared
+    )
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            coordinator.rootView
         }
     }
 }
