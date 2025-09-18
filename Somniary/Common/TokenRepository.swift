@@ -13,9 +13,16 @@ enum TokenStorageKey: String, CaseIterable {
 
 typealias TokenStoring = any KeyStoring<TokenStorageKey>
 
+protocol TokenReposable {
+    func getAccessToken() -> String?
+    func getRefreshToken() -> String?
+    func updateToken(_ token: TokenEntity)
+    func clear()
+}
+
 // TODO: Register into DIC
 // TODO: actor 사용해 리펙토링
-final class TokenRepository {
+final class TokenRepository: TokenReposable {
 
     // MARK: Private Props
     private let storage: TokenStoring
