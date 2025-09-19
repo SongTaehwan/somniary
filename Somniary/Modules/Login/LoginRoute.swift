@@ -11,14 +11,16 @@ import Foundation
 enum LoginRoute: Routable {
     /// 로그인 화면
     case login
+    /// 회원가입 화면
     case signup
+    /// 이메일 인증 화면
     case verification
+    /// 가입 완료 화면
     case completion
 
     var navigationType: NavigationType {
         switch self {
-        case .login, .verification, .completion: return .push
-        case .signup: return .present(.sheet())
+        case .login, .verification, .signup, .completion: return .push
         }
     }
 }
