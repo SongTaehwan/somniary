@@ -26,8 +26,11 @@ internal enum LoginIntent: Equatable {
     enum UserIntent: Equatable {
         case emailChanged(String)
         case otpCodeChanged(String)
-        case loginTapped
+        case submitSignup
+        case submitLogin
         case signUpTapped
+        case loginTapped
+
         case appleSignInTapped // SDK 연결
         case googleSignInTapped // SDK 연결
         case signupCompletionTapped
