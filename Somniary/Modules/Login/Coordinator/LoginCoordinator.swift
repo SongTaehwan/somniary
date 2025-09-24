@@ -17,7 +17,11 @@ final class LoginCoordinator: FlowCoordinator {
 
     @MainActor
     private lazy var loginViewModel: LoginViewModel = {
-        return LoginViewModel(coordinator: self)
+        let dataSource = RemoteAuthDataSource(baseURL: URL(string: "https://pipoeqfnniyoknlkqpfm.supabase.co")!)
+        let reducerEnv = LoginReducerEnvironment { UUID() }
+        let flowEnv = LoginEnvironment(auth: dataSource, reducerEnvironment: reducerEnv)
+        let executor = LoginExecutor(dataSource: dataSource)
+        return LoginViewModel(coordinator: self, environment: flowEnv, executor: executor)
     }()
 
     init() {
@@ -31,16 +35,16 @@ final class LoginCoordinator: FlowCoordinator {
     func destination(for route: LoginRoute) -> some View {
         switch route {
         case .login:
-            EmptyView()
+            LoginView(viewModel: self.loginViewModel)
         case .signup:
             // Signup
-            EmptyView()
+            SignUpView(viewModel: self.loginViewModel)
         case .verification:
             // SignupVerification
-            EmptyView()
+            SignUpVerificationView(viewModel: self.loginViewModel)
         case .completion:
             // completion
-            EmptyView()
+            SignUpCompletionView(viewModel: self.loginViewModel)
         @unknown default:
             EmptyView()
         }
@@ -51,7 +55,7 @@ final class LoginCoordinator: FlowCoordinator {
             coordinator: self,
             navigationController: self.rootNavigationController
         ) {
-            EmptyView()
+            LoginView(viewModel: self.loginViewModel)
         }
     }
 
@@ -69,5 +73,9 @@ final class LoginCoordinator: FlowCoordinator {
 
     func pushToVerification() {
         self.push(route: .verification)
+    }
+
+    func pushToCompletion() {
+        self.push(route: .completion)
     }
 }
