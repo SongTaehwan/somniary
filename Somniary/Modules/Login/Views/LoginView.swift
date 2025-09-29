@@ -12,34 +12,58 @@ struct LoginView: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
-        VStack {
-            VStack {
-                TextField("가입한 이메일 입력해주세요.", text: $viewModel.email)
-                    .frame(maxWidth: 200)
-                    .background(Color.white)
+        VStack(spacing: 20) {
+            VStack(spacing: 20) {
+                Image(systemName: "moon.fill")
+                    .resizable()
+                    .renderingMode(.template)
+                    .frame(width: 100, height: 100)
+                    .foregroundStyle(.yellow)
 
-                Button("로그인") {
-                    viewModel.send(.user(.loginTapped))
-                }
-
-                Button("회원가입") {
-                    viewModel.send(.user(.signUpTapped))
-                }
+                Text("Welcome!")
+                    .font(.title)
+                    .fontWeight(.bold)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.green)
 
-            VStack {
-                Button("애플 계정으로 로그인") {
+            VStack(spacing: 12) {
+                BarButton("애플 계정으로 로그인") {
                     viewModel.send(.user(.appleSignInTapped))
                 }
 
-                Button("구글 계정으로 로그인") {
+                BarButton("구글 계정으로 로그인") {
                     viewModel.send(.user(.googleSignInTapped))
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.gray)
+
+            HStack(spacing: 12) {
+                Separator()
+                Text("OR")
+                    .opacity(0.25)
+                Separator()
+            }
+
+            TextField("이메일 입력해주세요.", text: $viewModel.email)
+                .padding(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.gray, lineWidth: 1)
+                        .cornerRadius(16)
+                )
+
+            BarButton("로그인") {
+                viewModel.send(.user(.loginTapped))
+            }
+
+            Separator()
+
+            HStack {
+                Text("처음 방문 하셨나요?")
+                Button("회원 가입") {
+                    viewModel.send(.user(.signUpTapped))
+                }
+            }
+
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
