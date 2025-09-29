@@ -34,7 +34,7 @@ final class LoginCoordinator: FlowCoordinator {
 
     func destination(for route: LoginRoute) -> some View {
         switch route {
-        case .login:
+        case .main:
             LoginView(viewModel: self.loginViewModel)
         case .signup:
             // Signup
@@ -64,7 +64,7 @@ final class LoginCoordinator: FlowCoordinator {
     }
 
     func pushToSignIn() {
-        self.push(route: .login)
+        self.push(route: .main)
     }
 
     func pushToSignUp() {

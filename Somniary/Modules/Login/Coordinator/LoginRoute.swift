@@ -10,7 +10,7 @@ import Foundation
 // TODO: Login, Signup 플로우 분리할지?
 enum LoginRoute: Routable {
     /// 로그인 화면
-    case login
+    case main
     /// 회원가입 화면
     case signup
     /// 이메일 인증 화면
@@ -20,7 +20,7 @@ enum LoginRoute: Routable {
 
     var navigationType: NavigationType {
         switch self {
-        case .login, .verification, .signup, .completion: return .push
+        case .main, .verification, .signup, .completion: return .push
         }
     }
 }
