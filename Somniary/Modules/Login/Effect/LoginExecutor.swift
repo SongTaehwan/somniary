@@ -54,8 +54,26 @@ final class LoginExecutor: EffectExecuting {
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.signupResponse(result))) }
             }
+        case .verify(email: let email, requestId: let requestId):
+            tasks[requestId]?.cancel()
+            tasks[requestId] = Task {
+                defer {
+                    tasks[requestId] = nil
+                }
+
+                let result: Result<VoidResponse, LoginError> = await Result.catching {
+                    try await dataSource.verify(email: email)
+                } mapError: {
+                    $0 as? LoginError ?? .unknown
+                }
+
+                guard !Task.isCancelled else { return }
+                await MainActor.run { send(.systemInternal(.verifyResponse(result))) }
+            }
+
         case .logEvent(let message):
             print("[LOG] \(message)")
+
         default:
             break
         }

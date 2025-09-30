@@ -47,4 +47,8 @@ struct RemoteAuthDataSource: AuthDataSource {
     func login(email: String, code password: String, idempotencyKey: String? = nil) async throws -> Token {
         Token(accessToken: "123", refreshToken: "321")
     }
+
+    func verify(email: String) async throws -> VoidResponse {
+        return VoidResponse()
+    }
 }

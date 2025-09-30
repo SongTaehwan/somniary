@@ -10,4 +10,5 @@ import Foundation
 protocol AuthDataSource {
     func login(email: String, code: String, idempotencyKey: String?) async throws -> Token
     func signup(email: String, code: String, idempotencyKey: String?) async throws -> Token
+    func verify(email: String) async throws -> VoidResponse
 }

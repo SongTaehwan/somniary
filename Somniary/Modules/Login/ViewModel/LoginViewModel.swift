@@ -61,10 +61,15 @@ final class LoginViewModel: ViewModelType {
         self.binding()
     }
 
+    deinit {
+        print("deinit LoginViewModel")
+    }
+
     /// 사용자 인터렉션 바인딩
     private func binding() {
         // 이메일 입력 처리
         $email
+            .dropFirst()
             .removeDuplicates()
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
             .sink { [weak self] in
@@ -74,6 +79,7 @@ final class LoginViewModel: ViewModelType {
 
         // OTP 코드 입력 처리
         $otpCode
+            .dropFirst()
             .removeDuplicates()
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
             .sink { [weak self] in
@@ -129,6 +135,15 @@ final class LoginViewModel: ViewModelType {
         // 네비게이션, UI 출력 관련 output 은 VM 에 위임
         for plan in plans {
             switch plan.type {
+            case let .updateInputs(email, otpCode):
+                if let email {
+                    self.email = email
+                }
+
+                if let otpCode {
+                    self.otpCode = otpCode
+                }
+
             case .navigateHome:
                 self.coordinator.finish()
 

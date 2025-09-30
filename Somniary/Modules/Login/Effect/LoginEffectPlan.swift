@@ -11,13 +11,16 @@ import Foundation
 struct LoginEffectPlan: Equatable {
 
     enum EffectType: Equatable {
+        /// API effect
         case login(email: String, otpCode: String, requestId: UUID)
         case signup(email: String, otpCode: String, requestId: UUID)
+        case verify(email: String, requestId: UUID)
 
         case logEvent(String)
 
         /// one-off UI outputs, ViewModel 에 의해 처리됨
         case showToast(String)
+        case updateInputs(email: String?, otpCode: String?)
 
         /// one-off navigations, ViewModel 에 의해 처리됨
         case navigateHome
@@ -106,7 +109,27 @@ extension LoginEffectPlan {
         )
     }
 
+    static func verify(
+        email: String,
+        requestId: UUID,
+        retry: Int = 0,
+        timeout: Int = 0
+    ) -> Self {
+        return .make(
+            .verify(
+                email: email,
+                requestId: requestId
+            ),
+            retry: retry,
+            timeout: timeout
+        )
+    }
+
     static func logEvent(_ message: String) -> Self {
         return .make(.logEvent(message))
+    }
+
+    static func updateInputs(email: String? = nil, otpCode: String? = nil) -> Self {
+        return .make(.updateInputs(email: email, otpCode: otpCode))
     }
 }

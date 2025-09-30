@@ -47,16 +47,25 @@ fileprivate func reduceUserIntent(
         }
 
         return (newState, [
+            .updateInputs(otpCode: ""),
             .route(.navigateOtpVerification),
-            .logEvent("naviate_otp_verification")
+            .logEvent("navigate_otp_verification")
         ])
 
     case .signUpTapped:
         newState.email = ""
         newState.otpCode = ""
         return (newState, [
+            .updateInputs(email: "", otpCode: ""),
             .route(.navigateSignUp),
             .logEvent("navigate_sign_up")
+        ])
+
+    case .requestOtpCodeTapped:
+        let requestId = newState.latestRequestId ?? env.makeRequestId()
+        return (newState, [
+            .verify(email: newState.email, requestId: requestId),
+            .logEvent("request_otp_code")
         ])
 
     case .appleSignInTapped:
@@ -131,6 +140,15 @@ fileprivate func reduceInternalIntent(
         case .success:
             return (newState, [.route(.navigateSignupCompletion)])
 
+        case .failure(let error):
+            newState.errorMessage = error.readableMessage
+            return (newState, [.toast(error.readableMessage)])
+        }
+
+    case .verifyResponse(let result):
+        switch result {
+        case .success:
+            return (newState, [.toast("이메일 발송 완료")])
         case .failure(let error):
             newState.errorMessage = error.readableMessage
             return (newState, [.toast(error.readableMessage)])

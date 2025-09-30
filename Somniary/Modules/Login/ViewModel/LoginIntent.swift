@@ -20,6 +20,7 @@ internal enum LoginIntent: Equatable {
     enum InternalIntent: Equatable {
         case loginResponse(Result<Token, LoginError>)  // 로그인 API 결과 처리
         case signupResponse(Result<Token, LoginError>) // 회원가입 API 결과 처리
+        case verifyResponse(Result<VoidResponse, LoginError>)
     }
 
     // MARK: User interaction
@@ -30,6 +31,7 @@ internal enum LoginIntent: Equatable {
         case submitLogin
         case signUpTapped
         case loginTapped
+        case requestOtpCodeTapped
 
         case appleSignInTapped // SDK 연결
         case googleSignInTapped // SDK 연결
