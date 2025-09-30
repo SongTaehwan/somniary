@@ -41,7 +41,7 @@ final class LoginCoordinator: FlowCoordinator {
             SignUpView(viewModel: self.loginViewModel)
         case .verification:
             // SignupVerification
-            SignUpVerificationView(viewModel: self.loginViewModel)
+            LoginVerificationView(viewModel: self.loginViewModel)
         case .completion:
             // completion
             SignUpCompletionView(viewModel: self.loginViewModel)

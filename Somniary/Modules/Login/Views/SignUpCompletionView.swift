@@ -12,15 +12,29 @@ struct SignUpCompletionView: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
-        VStack {
-            Text("가입 완료")
+        VStack(spacing: 16) {
             Spacer()
-            Button("홈으로 가기") {
+
+            Text("🎉 환영합니다!")
+                .font(.title)
+                .fontWeight(.semibold)
+
+            VStack {
+                Text("오늘 📝일기를 적어볼까요?")
+                    .font(.title3)
+                Text("아래 버튼을 눌러주세요 ⬇️")
+                    .font(.title3)
+            }
+
+            Spacer()
+
+            BarButton("홈으로 가기") {
                 viewModel.send(.user(.signupCompletionTapped))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
+        .navigationTitle("회원 가입 완료")
     }
 }
 

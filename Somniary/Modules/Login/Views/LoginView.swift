@@ -42,17 +42,15 @@ struct LoginView: View {
                 Separator()
             }
 
-            TextField("이메일 입력해주세요.", text: $viewModel.email)
-                .padding(20)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .cornerRadius(16)
-                )
+            TextInput("이메일 입력해주세요.", text: $viewModel.email)
+                .autocorrectionDisabled(true)
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
 
             BarButton("로그인") {
                 viewModel.send(.user(.loginTapped))
             }
+            .disabled(viewModel.email.isValidEmail == false)
 
             Separator()
 
