@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 protocol SomniaryNetworking<Target> {
-    associatedtype Target
+    associatedtype Target: SomniaryEndpoint
 
     func request<T: Decodable>(_ endpoint: Target, type: T.Type) async throws -> T
 }
