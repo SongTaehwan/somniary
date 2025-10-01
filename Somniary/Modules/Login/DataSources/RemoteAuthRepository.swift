@@ -30,25 +30,26 @@ enum LoginError: Error, Equatable {
     }
 }
 
-struct RemoteAuthDataSource: AuthDataSource {
+struct RemoteAuthRepository: AuthReposable {
 
-    private let baseURL: URL
-    private let session: URLSession
+    private let client: any SomniaryNetworking<AuthEndpoint>
 
-    init(baseURL: URL, session: URLSession = .shared) {
-        self.baseURL = baseURL
-        self.session = session
+    init(client: any SomniaryNetworking<AuthEndpoint>) {
+        self.client = client
     }
 
-    func signup(email: String, code: String, idempotencyKey: String?) async throws -> Token {
-        Token(accessToken: "123", refreshToken: "321")
+    func signup(email: String, idempotencyKey: String?) async throws -> VoidResponse {
+        let result = try await client.request(.signup(email: email), type: VoidResponse.self)
+        return result
     }
 
-    func login(email: String, code password: String, idempotencyKey: String? = nil) async throws -> Token {
-        Token(accessToken: "123", refreshToken: "321")
+    func login(email: String, idempotencyKey: String? = nil) async throws -> VoidResponse {
+        let result = try await client.request(.login(email: email), type: VoidResponse.self)
+        return result
     }
 
-    func verify(email: String) async throws -> VoidResponse {
-        return VoidResponse()
+    func verify(email: String, otpCode: String, type: String) async throws -> Token {
+        let result = try await client.request(.verify(email: email, otpCode: otpCode, type: .magiclink), type: Token.self)
+        return result
     }
 }
