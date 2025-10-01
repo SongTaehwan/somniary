@@ -17,7 +17,7 @@ final class LoginCoordinator: FlowCoordinator {
 
     @MainActor
     private lazy var loginViewModel: LoginViewModel = {
-        let dataSource = RemoteAuthDataSource(baseURL: URL(string: "https://pipoeqfnniyoknlkqpfm.supabase.co")!)
+        let dataSource = RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)
         let reducerEnv = LoginReducerEnvironment { UUID() }
         let flowEnv = LoginEnvironment(auth: dataSource, reducerEnvironment: reducerEnv)
         let executor = LoginExecutor(dataSource: dataSource)

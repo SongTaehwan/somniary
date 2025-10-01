@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E4D48C7A2E740DC700D657D9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E4D48C792E740DC700D657D9 /* KeychainAccess */; };
 		E4F501F72E78001A001E0B58 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E4F501F62E78001A001E0B58 /* .gitignore */; };
+		E4F504A82E8BA767001E0B58 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E4F504A72E8BA767001E0B58 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4D48C7A2E740DC700D657D9 /* KeychainAccess in Frameworks */,
+				E4F504A82E8BA767001E0B58 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +123,7 @@
 			name = Somniary;
 			packageProductDependencies = (
 				E4D48C792E740DC700D657D9 /* KeychainAccess */,
+				E4F504A72E8BA767001E0B58 /* Alamofire */,
 			);
 			productName = Somniary;
 			productReference = E413834F2E713AE400F9A185 /* Somniary.app */;
@@ -206,6 +209,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E4D48C782E740DC700D657D9 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				E4F504A62E8BA767001E0B58 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E41383502E713AE400F9A185 /* Products */;
@@ -595,6 +599,14 @@
 				version = 4.2.2;
 			};
 		};
+		E4F504A62E8BA767001E0B58 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = exactVersion;
+				version = 5.10.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -602,6 +614,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E4D48C782E740DC700D657D9 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
 			productName = KeychainAccess;
+		};
+		E4F504A72E8BA767001E0B58 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4F504A62E8BA767001E0B58 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
