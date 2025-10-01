@@ -48,12 +48,12 @@ struct SignUpView: View {
 
 #Preview {
     let environment = LoginEnvironment(
-        auth: RemoteAuthDataSource(baseURL: URL(string: "https://api.example.com")!, session: .shared),
+        auth: RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient),
         reducerEnvironment: LoginReducerEnvironment { UUID() }
     )
     SignUpView(viewModel: .init(
         coordinator: .init(),
         environment: environment,
-        executor: LoginExecutor(dataSource: RemoteAuthDataSource(baseURL: URL(string: "https://api.example.com")!, session: .shared)))
+        executor: LoginExecutor(dataSource: RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)))
     )
 }

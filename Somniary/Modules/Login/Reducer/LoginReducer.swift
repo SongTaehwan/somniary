@@ -64,7 +64,12 @@ fileprivate func reduceUserIntent(
     case .requestOtpCodeTapped:
         let requestId = newState.latestRequestId ?? env.makeRequestId()
         return (newState, [
-            .verify(email: newState.email, requestId: requestId),
+            .verify(
+                email: newState.email,
+                otpCode: newState.otpCode,
+                type: "signup",
+                requestId: requestId
+            ),
             .logEvent("request_otp_code")
         ])
 
@@ -90,7 +95,7 @@ fileprivate func reduceUserIntent(
         let requestId = newState.latestRequestId ?? env.makeRequestId()
         newState.latestRequestId = requestId
         newState.isLoading = true
-        return (newState, [.signup(email: newState.email, otpCode: newState.otpCode, requestId: requestId)])
+        return (newState, [.signup(email: newState.email, requestId: requestId)])
 
     case .submitLogin:
         guard newState.canSubmit else {
@@ -100,7 +105,7 @@ fileprivate func reduceUserIntent(
         let requestId = newState.latestRequestId ?? env.makeRequestId()
         newState.latestRequestId = requestId
         newState.isLoading = true
-        return (newState, [.login(email: newState.email, otpCode: newState.otpCode, requestId: requestId)])
+        return (newState, [.login(email: newState.email, requestId: requestId)])
     }
 }
 

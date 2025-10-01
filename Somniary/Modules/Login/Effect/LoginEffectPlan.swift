@@ -12,9 +12,9 @@ struct LoginEffectPlan: Equatable {
 
     enum EffectType: Equatable {
         /// API effect
-        case login(email: String, otpCode: String, requestId: UUID)
-        case signup(email: String, otpCode: String, requestId: UUID)
-        case verify(email: String, requestId: UUID)
+        case login(email: String, requestId: UUID)
+        case signup(email: String, requestId: UUID)
+        case verify(email: String, otpCode: String, type: String, requestId: UUID)
 
         case logEvent(String)
 
@@ -75,7 +75,6 @@ extension LoginEffectPlan {
 
     static func login(
         email: String,
-        otpCode: String,
         requestId: UUID, 
         retry: Int = 0,
         timeout: Int = 0
@@ -83,7 +82,6 @@ extension LoginEffectPlan {
         return .make(
             .login(
                 email: email,
-                otpCode: otpCode,
                 requestId: requestId
             ),
             retry: retry,
@@ -93,7 +91,6 @@ extension LoginEffectPlan {
 
     static func signup(
         email: String,
-        otpCode: String,
         requestId: UUID,
         retry: Int = 0,
         timeout: Int = 0
@@ -101,7 +98,6 @@ extension LoginEffectPlan {
         return .make(
             .signup(
                 email: email,
-                otpCode: otpCode,
                 requestId: requestId
             ),
             retry: retry,
@@ -111,6 +107,8 @@ extension LoginEffectPlan {
 
     static func verify(
         email: String,
+        otpCode: String,
+        type: String,
         requestId: UUID,
         retry: Int = 0,
         timeout: Int = 0
@@ -118,6 +116,8 @@ extension LoginEffectPlan {
         return .make(
             .verify(
                 email: email,
+                otpCode: otpCode,
+                type: type,
                 requestId: requestId
             ),
             retry: retry,

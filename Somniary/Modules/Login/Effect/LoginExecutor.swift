@@ -12,15 +12,15 @@ final class LoginExecutor: EffectExecuting {
     typealias Intent = LoginIntent
 
     private var tasks: [UUID: Task<Void, Never>] = [:]
-    private let dataSource: AuthDataSource
+    private let dataSource: AuthReposable
 
-    init(dataSource: AuthDataSource) {
+    init(dataSource: AuthReposable) {
         self.dataSource = dataSource
     }
 
     func perform(_ plan: Plan, send: @escaping (Intent) -> Void) {
         switch plan.type {
-        case let .login(email, otpCode, requestId):
+        case let .login(email, requestId):
             // 진행 중이면 이전 작업 취소 (Latest wins)
             tasks[requestId]?.cancel()
             tasks[requestId] = Task {
@@ -28,8 +28,8 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result: Result<Token, LoginError> = await Result.catching {
-                    try await dataSource.login(email: email, code: otpCode, idempotencyKey: nil)
+                let result: Result<VoidResponse, LoginError> = await Result.catching {
+                    try await dataSource.login(email: email, idempotencyKey: nil)
                 } mapError: {
                     $0 as? LoginError ?? .unknown
                 }
@@ -38,23 +38,7 @@ final class LoginExecutor: EffectExecuting {
                 await MainActor.run { send(.systemInternal(.loginResponse(result))) }
             }
 
-        case .signup(email: let email, otpCode: let otpCode, requestId: let requestId):
-            tasks[requestId]?.cancel()
-            tasks[requestId] = Task {
-                defer {
-                    tasks[requestId] = nil
-                }
-
-                let result: Result<Token, LoginError> = await Result.catching {
-                    try await dataSource.signup(email: email, code: otpCode, idempotencyKey: nil)
-                } mapError: {
-                    $0 as? LoginError ?? .unknown
-                }
-
-                guard !Task.isCancelled else { return }
-                await MainActor.run { send(.systemInternal(.signupResponse(result))) }
-            }
-        case .verify(email: let email, requestId: let requestId):
+        case let .signup(email: email, requestId: requestId):
             tasks[requestId]?.cancel()
             tasks[requestId] = Task {
                 defer {
@@ -62,7 +46,23 @@ final class LoginExecutor: EffectExecuting {
                 }
 
                 let result: Result<VoidResponse, LoginError> = await Result.catching {
-                    try await dataSource.verify(email: email)
+                    try await dataSource.signup(email: email, idempotencyKey: nil)
+                } mapError: {
+                    $0 as? LoginError ?? .unknown
+                }
+
+                guard !Task.isCancelled else { return }
+                await MainActor.run { send(.systemInternal(.signupResponse(result))) }
+            }
+        case let .verify(email: email, otpCode: code, type: type, requestId: requestId):
+            tasks[requestId]?.cancel()
+            tasks[requestId] = Task {
+                defer {
+                    tasks[requestId] = nil
+                }
+
+                let result: Result<Token, LoginError> = await Result.catching {
+                    try await dataSource.verify(email: email, otpCode: code, type: type)
                 } mapError: {
                     $0 as? LoginError ?? .unknown
                 }

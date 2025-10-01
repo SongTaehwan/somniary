@@ -7,4 +7,4 @@
 
 import Foundation
 
-struct VoidResponse: Equatable {}
+struct VoidResponse: Equatable, Decodable {}
