@@ -15,7 +15,9 @@ enum RequestDataType {
     case entity(data: Encodable, encoder: ParameterEncoder)
 }
 
+/// 어디로, 어떻게, 무엇을 보낼지 정의
 protocol Endpoint: URLRequestConvertible {
+
     var baseURL: URL { get }
     var path: String { get }
     var method: HTTPMethod { get }
@@ -25,6 +27,7 @@ protocol Endpoint: URLRequestConvertible {
 }
 
 extension Endpoint {
+
     var headers: HTTPHeaders? { nil }
     var queryItems: [URLQueryItem]? { nil }
     var payload: RequestDataType? { .plain }
@@ -33,7 +36,10 @@ extension Endpoint {
         let url = self.baseURL.appending(path: self.path, queryItems: self.queryItems ?? [])
         var request = try URLRequest(url: url, method: self.method, headers: self.headers)
         request.headers.update(.contentType("application/json"))
+        return try buildPayload(request)
+    }
 
+    func buildPayload(_ request: URLRequest) throws -> URLRequest {
         if case let .jsonObject(data, encoder) = payload {
             let requestWithPayload = try encoder.encode(request, with: data)
             return requestWithPayload
@@ -46,11 +52,4 @@ extension Endpoint {
 
         return request
     }
-}
-
-/// type erasure for Encodable body
-struct AnyEncodable: Encodable {
-    private let _encode: (Encoder) throws -> Void
-    init(_ wrapped: Encodable) { _encode = wrapped.encode }
-    func encode(to encoder: Encoder) throws { try _encode(encoder) }
 }
