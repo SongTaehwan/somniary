@@ -36,9 +36,22 @@
 		E4F501F62E78001A001E0B58 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E4F509072E8E3FB6001E0B58 /* Exceptions for "Somniary" folder in "Somniary" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E413834E2E713AE400F9A185 /* Somniary */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E41383512E713AE400F9A185 /* Somniary */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E4F509072E8E3FB6001E0B58 /* Exceptions for "Somniary" folder in "Somniary" target */,
+			);
 			path = Somniary;
 			sourceTree = "<group>";
 		};
@@ -50,6 +63,11 @@
 		E41383692E713AE400F9A185 /* SomniaryUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SomniaryUITests;
+			sourceTree = "<group>";
+		};
+		E4F50A902E8E63D6001E0B58 /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -84,6 +102,7 @@
 		E41383462E713AE400F9A185 = {
 			isa = PBXGroup;
 			children = (
+				E4F50A902E8E63D6001E0B58 /* Config */,
 				E4F501F62E78001A001E0B58 /* .gitignore */,
 				E41383512E713AE400F9A185 /* Somniary */,
 				E413835F2E713AE400F9A185 /* SomniaryTests */,
@@ -119,6 +138,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E41383512E713AE400F9A185 /* Somniary */,
+				E4F50A902E8E63D6001E0B58 /* Config */,
 			);
 			name = Somniary;
 			packageProductDependencies = (
@@ -288,6 +308,8 @@
 /* Begin XCBuildConfiguration section */
 		E413836E2E713AE400F9A185 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E4F50A902E8E63D6001E0B58 /* Config */;
+			baseConfigurationReferenceRelativePath = Dev.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -352,6 +374,8 @@
 		};
 		E413836F2E713AE400F9A185 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E4F50A902E8E63D6001E0B58 /* Config */;
+			baseConfigurationReferenceRelativePath = Release.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -417,6 +441,7 @@
 				DEVELOPMENT_TEAM = FCQD35AW5P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Somniary/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -452,6 +477,7 @@
 				DEVELOPMENT_TEAM = FCQD35AW5P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Somniary/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
