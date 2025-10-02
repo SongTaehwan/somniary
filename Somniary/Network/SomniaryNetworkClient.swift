@@ -18,39 +18,47 @@ final class SomniaryNetworkClient<Target: SomniaryEndpoint>: SomniaryNetworking 
         self.session = session
     }
 
-
     func request<T: Decodable>(_ endpoint: Target, type: T.Type) async throws -> T {
         #if DEBUG
         print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path)")
         #endif
 
-        do {
-            let result = try await self.session.request(endpoint)
-                .serializingDecodable(T.self, decoder: decoder)
-                .value
+        let response = await self.session.request(endpoint)
+            .validate(statusCode: 200..<300)
+            .serializingDecodable(T.self, decoder: decoder)
+            .result
+
+        switch response {
+        case.success(let result):
             #if DEBUG
             print("✅ Response: \(result)")
             #endif
             return result
-        } catch let AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: statusCode)) {
-            throw NetworkError.from(statusCode: statusCode)
+        case .failure(let error):
+            #if DEBUG
+            print("🚨 [\(endpoint.method.rawValue)] \(endpoint.path)")
+            #endif
+            throw mapError(error)
+        }
+    }
 
-        } catch let AFError.responseSerializationFailed(reason: .decodingFailed(error: decodingError)) {
-            throw NetworkError.decodingError(decodingError)
-
-        } catch let AFError.sessionTaskFailed(error: urlError) {
+    private func mapError(_ error: AFError) -> NetworkError {
+        switch error {
+        case .responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
+            return NetworkError.from(statusCode: statusCode)
+        case let .responseSerializationFailed(reason: .decodingFailed(error: decodingError)):
+            return NetworkError.decodingError(decodingError)
+        case let .sessionTaskFailed(error: urlError):
             if let urlError = urlError as? URLError {
                 // 네트워크 연결 실패 (타임아웃, 인터넷 연결 없음 등)
-                throw NetworkError.networkError(urlError)
+                return NetworkError.networkError(urlError)
             }
 
-            throw NetworkError.unknown
-
-        } catch AFError.invalidURL {
-            throw NetworkError.invalidRequest
-
-        } catch {
-            throw NetworkError.unknown
+            return NetworkError.unknown
+        case .invalidURL:
+            return NetworkError.invalidRequest
+        default:
+            return NetworkError.unknown
         }
     }
 }
