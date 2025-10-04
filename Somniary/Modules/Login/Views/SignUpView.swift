@@ -22,10 +22,9 @@ struct SignUpView: View {
                     .textInputAutocapitalization(.never)
 
                 if viewModel.email.isValidEmail {
-                    TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.state.otpCode)
+                    TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.otpCode)
                         .keyboardType(.numberPad)
                         .maxLength(text: $viewModel.otpCode, limit: 6)
-
                 }
             }
 
