@@ -49,12 +49,13 @@ fileprivate func reduceUserIntent(
         }
 
         let requestId = newState.latestRequestId ?? env.makeRequestId()
+        newState.otpCode = ""
 
         return (newState, [
             .logEvent("reset_inputs"),
-            .updateInputs(otpCode: ""),
+            .updateTextField(otpCode: ""),
             .logEvent("request_login"),
-            .login(email: newState.email, requestId: requestId),
+            .requestLoginCode(email: newState.email, requestId: requestId),
         ])
 
     case .signUpTapped:
@@ -63,22 +64,18 @@ fileprivate func reduceUserIntent(
 
         return (newState, [
             .logEvent("reset_inputs", level: .debug),
-            .updateInputs(email: "", otpCode: ""),
+            .updateTextField(email: "", otpCode: ""),
             .logEvent("navigate_sign_up"),
             .route(.navigateSignUp)
         ])
 
     case .requestOtpCodeTapped:
         let requestId = newState.latestRequestId ?? env.makeRequestId()
+        newState.step = .otpCode
 
         return (newState, [
             .logEvent("request_otp_verification"),
-            .verify(
-                email: newState.email,
-                otpCode: newState.otpCode,
-                type: "signup",
-                requestId: requestId
-            )
+            .requestSignupCode(email: newState.email, requestId: requestId),
         ])
 
     case .appleSignInTapped:
@@ -109,7 +106,11 @@ fileprivate func reduceUserIntent(
 
         return (newState, [
             .logEvent("request_signup"),
-            .signup(email: newState.email, requestId: requestId)
+            .verify(
+                email: newState.email,
+                otpCode: newState.otpCode,
+                requestId: requestId
+            )
         ])
 
     case .submitLogin:
@@ -126,7 +127,11 @@ fileprivate func reduceUserIntent(
 
         return (newState, [
             .logEvent("request_login"),
-            .login(email: newState.email, requestId: requestId)
+            .verify(
+                email: newState.email,
+                otpCode: newState.otpCode,
+                requestId: requestId
+            )
         ])
     }
 }
@@ -173,9 +178,7 @@ fileprivate func reduceInternalIntent(
         switch result {
         case .success:
             return (newState, [
-                .logEvent("signup_success", level: .debug),
-                .logEvent("navigate_signup_completion"),
-                .route(.navigateSignupCompletion)
+                .logEvent("signup_success", level: .debug)
             ])
 
         case .failure(let error):
@@ -188,10 +191,11 @@ fileprivate func reduceInternalIntent(
 
     case .verifyResponse(let result):
         switch result {
-        case .success:
+        case .success(let token):
             return (newState, [
                 .logEvent("otp_verification_success", level: .debug),
-                .toast("이메일 발송 완료")
+                .logEvent("navigate_home"),
+                .route(.navigateHome)
             ])
 
         case .failure(let error):

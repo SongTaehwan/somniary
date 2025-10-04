@@ -9,7 +9,6 @@ import Foundation
 
 protocol AuthReposable {
 
-    func login(email: String, idempotencyKey: String?) async throws -> VoidResponse
-    func signup(email: String, idempotencyKey: String?) async throws -> VoidResponse
-    func verify(email: String, otpCode: String, type: String) async throws -> Token
+    func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async throws -> VoidResponse
+    func verify(email: String, otpCode: String) async throws -> TokenEntity
 }

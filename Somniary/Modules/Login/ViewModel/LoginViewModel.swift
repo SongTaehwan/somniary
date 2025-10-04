@@ -156,7 +156,7 @@ final class LoginViewModel: ViewModelType {
         // 네비게이션, UI 출력 관련 output 은 VM 에 위임
         for plan in plans {
             switch plan.type {
-            case let .updateInputs(email, otpCode):
+            case let .updateTextField(email, otpCode):
                 if let email {
                     self.email = email
                 }
