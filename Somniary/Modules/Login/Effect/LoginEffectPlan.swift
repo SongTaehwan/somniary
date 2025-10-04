@@ -125,8 +125,16 @@ extension LoginEffectPlan {
         )
     }
 
-    static func logEvent(_ message: String) -> Self {
-        return .make(.logEvent(message))
+    enum LogLevel: String {
+        case debug = "🐛"
+        case info = "ℹ️"
+        case error = "🚨"
+        case warning = "⚠️"
+    }
+
+    static func logEvent(_ message: String, level: LogLevel = LogLevel.info) -> Self {
+        let log = "[\(level.rawValue)] \(message)"
+        return .make(.logEvent(log))
     }
 
     static func updateInputs(email: String? = nil, otpCode: String? = nil) -> Self {

@@ -72,7 +72,7 @@ final class LoginExecutor: EffectExecuting {
             }
 
         case .logEvent(let message):
-            print("[LOG] \(message)")
+            print(message)
 
         default:
             break
