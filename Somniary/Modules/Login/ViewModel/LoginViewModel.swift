@@ -8,12 +8,6 @@
 import SwiftUI
 import Combine
 
-extension Token: Equatable {
-    static func == (lhs: Token, rhs: Token) -> Bool {
-        lhs.accessToken == rhs.accessToken && lhs.refreshToken == rhs.refreshToken
-    }
-}
-
 final class LoginViewModel: ViewModelType {
 
     // MARK: State definition
@@ -67,33 +61,52 @@ final class LoginViewModel: ViewModelType {
 
     /// 사용자 인터렉션 바인딩
     private func binding() {
-        // 이메일 입력 처리
+        self.bindEmail()
+        self.bindOtpCode()
+        self.bindButtons()
+    }
+
+    private func bindEmail() {
+        // input -> state
+        let emailInState = $state.map(\.email)
         $email
-            .dropFirst()
             .removeDuplicates()
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
+            .onlyWhenDifferent(from: emailInState)
             .sink { [weak self] in
                 self?.send(.user(.emailChanged($0)))
             }
             .store(in: &cancellables)
 
+        // input <- state
+        // 1. reducer 에서 변경
+    }
+
+    private func bindOtpCode() {
         // OTP 코드 입력 처리
+        let codeInState = $state.map(\.otpCode)
         $otpCode
-            .dropFirst()
             .removeDuplicates()
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
+            .onlyWhenDifferent(from: codeInState)
             .sink { [weak self] in
                 self?.send(.user(.otpCodeChanged($0)))
             }
             .store(in: &cancellables)
+    }
 
+    private func bindButtons() {
         // 로그인 버튼 처리
         let submitLoginTapped = intents.partition {
             $0 == .user(.submitLogin) && self.state.isLoading == false
         }
 
         submitLoginTapped.included
-            .throttle(for: .milliseconds(500), scheduler: DispatchQueue.main, latest: false)
+            .throttle(
+                for: .milliseconds(500),
+                scheduler: DispatchQueue.main,
+                latest: false
+            )
             .sink { [weak self] _ in
                 self?.handle(.user(.submitLogin))
             }
@@ -105,7 +118,11 @@ final class LoginViewModel: ViewModelType {
         }
 
         submitSignupTapped.included
-            .throttle(for: .milliseconds(500), scheduler: DispatchQueue.main, latest: false)
+            .throttle(
+                for: .milliseconds(500),
+                scheduler: DispatchQueue.main,
+                latest: false
+            )
             .sink { [weak self] _ in
                 self?.handle(.user(.submitSignup))
             }
@@ -115,7 +132,11 @@ final class LoginViewModel: ViewModelType {
         let signupCompletionTapped = submitLoginTapped.excluded.partition { $0 == .user(.signupCompletionTapped) }
 
         signupCompletionTapped.included
-            .throttle(for: .milliseconds(500), scheduler: DispatchQueue.main, latest: false)
+            .throttle(
+                for: .milliseconds(500),
+                scheduler: DispatchQueue.main,
+                latest: false
+            )
             .sink { [weak self] _ in
                 self?.handle(.user(.signupCompletionTapped))
             }
