@@ -20,7 +20,7 @@ final class SomniaryNetworkClient<Target: SomniaryEndpoint>: SomniaryNetworking 
 
     func request<T: Decodable>(_ endpoint: Target, type: T.Type) async throws -> T {
         #if DEBUG
-        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path)")
+        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path) \(String(describing: endpoint.headers))")
         #endif
 
         let response = await self.session.request(endpoint)
@@ -43,6 +43,8 @@ final class SomniaryNetworkClient<Target: SomniaryEndpoint>: SomniaryNetworking 
     }
 
     private func mapError(_ error: AFError) -> NetworkError {
+        print("🚨 ERROR - \(error.localizedDescription)")
+
         switch error {
         case .responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
             return NetworkError.from(statusCode: statusCode)
