@@ -74,6 +74,9 @@ final class LoginExecutor: EffectExecuting {
         case .logEvent(let message):
             print(message)
 
+        case .storeToken(let token):
+            TokenRepository.shared.updateToken(.init(accessToken: token.accessToken, refreshToken: token.refreshToken))
+
         default:
             break
         }

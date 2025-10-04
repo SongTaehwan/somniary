@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TokenEntity: Codable {
+struct TokenEntity: Codable, Equatable {
     var accessToken: String
     var refreshToken: String
 }

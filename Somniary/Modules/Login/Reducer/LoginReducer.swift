@@ -194,6 +194,7 @@ fileprivate func reduceInternalIntent(
         case .success(let token):
             return (newState, [
                 .logEvent("otp_verification_success", level: .debug),
+                .storeToken(token),
                 .logEvent("navigate_home"),
                 .route(.navigateHome)
             ])
