@@ -8,18 +8,44 @@
 import SwiftUI
 import Combine
 
+// TODO: 로그인 422 에러 처리
+// TODO: TextField disabled 스타일
+// TODO: Loading indicator
+// TODO: Apple login
+// TODO: Google login
 final class LoginViewModel: ViewModelType {
+
+    typealias LoginExecutor = any EffectExecuting<LoginEffectPlan, LoginIntent>
 
     // MARK: State definition
     struct LoginState: Equatable {
+        enum Requirement {
+            case email
+            case otpCode
+            case errorHandling
+        }
+
+        var requirement = Requirement.email
+
         var email: String = ""
         var otpCode: String = ""
         var isLoading = false
         var errorMessage: String?
         /// 멱등, 추적용
         var latestRequestId: UUID?
+
         var canSubmit: Bool {
-            email.isValidEmail && otpCode.count == 6 && isLoading == false
+            self.otpCodeRequired &&
+            self.email.isValidEmail &&
+            self.otpCode.count == 6
+        }
+
+        var isValidEmail: Bool {
+            self.email.isValidEmail
+        }
+
+        var otpCodeRequired: Bool {
+            self.requirement == .otpCode
         }
     }
 
@@ -36,7 +62,7 @@ final class LoginViewModel: ViewModelType {
     // MARK: Private properties
     private var cancellables = Set<AnyCancellable>()
     private let intents = PassthroughSubject<LoginIntent, Never>()
-    private let executor: any EffectExecuting<LoginEffectPlan, LoginIntent>;
+    private let executor: LoginExecutor
     private let coordinator: LoginCoordinator
     private let environment: LoginEnvironment
 
@@ -47,7 +73,7 @@ final class LoginViewModel: ViewModelType {
     init(
         coordinator: LoginCoordinator,
         environment: LoginEnvironment,
-        executor: any EffectExecuting<LoginEffectPlan, LoginIntent>
+        executor: LoginExecutor
     ) {
         self.coordinator = coordinator
         self.environment = environment
@@ -61,13 +87,12 @@ final class LoginViewModel: ViewModelType {
 
     /// 사용자 인터렉션 바인딩
     private func binding() {
-        self.bindEmail()
-        self.bindOtpCode()
+        self.bindTextFields()
         self.bindButtons()
     }
 
-    private func bindEmail() {
-        // input -> state
+    /// TextField -> State 로의 단방향 바인딩
+    private func bindTextFields() {
         let emailInState = $state.map(\.email)
         $email
             .removeDuplicates()
@@ -78,11 +103,6 @@ final class LoginViewModel: ViewModelType {
             }
             .store(in: &cancellables)
 
-        // input <- state
-        // 1. reducer 에서 변경
-    }
-
-    private func bindOtpCode() {
         // OTP 코드 입력 처리
         let codeInState = $state.map(\.otpCode)
         $otpCode

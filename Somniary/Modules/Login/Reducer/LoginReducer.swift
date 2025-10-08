@@ -71,7 +71,6 @@ fileprivate func reduceUserIntent(
 
     case .requestOtpCodeTapped:
         let requestId = newState.latestRequestId ?? env.makeRequestId()
-        newState.step = .otpCode
 
         return (newState, [
             .logEvent("request_otp_verification"),
@@ -158,6 +157,7 @@ fileprivate func reduceInternalIntent(
 
         switch result {
         case .success:
+            newState.requirement = .otpCode
             return (newState,[
                 .logEvent("login_success", level: .debug),
                 .logEvent("navigate_otp_verification"),
@@ -165,6 +165,7 @@ fileprivate func reduceInternalIntent(
             ])
 
         case .failure(let error):
+            newState.requirement = .errorHandling
             newState.errorMessage = error.readableMessage
             return (newState, [
                 .logEvent("login_failed \(error.readableMessage)", level: .error),
@@ -177,11 +178,13 @@ fileprivate func reduceInternalIntent(
 
         switch result {
         case .success:
+            newState.requirement = .otpCode
             return (newState, [
                 .logEvent("signup_success", level: .debug)
             ])
 
         case .failure(let error):
+            newState.requirement = .errorHandling
             newState.errorMessage = error.readableMessage
             return (newState, [
                 .logEvent("signup_failed \(error.readableMessage)", level: .error),

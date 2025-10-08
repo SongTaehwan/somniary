@@ -20,25 +20,42 @@ struct SignUpView: View {
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
+                    .disabled(viewModel.state.otpCodeRequired)
 
-                if viewModel.email.isValidEmail {
+                if viewModel.state.otpCodeRequired {
                     TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.otpCode)
                         .keyboardType(.numberPad)
                         .maxLength(text: $viewModel.otpCode, limit: 6)
                 }
+
+                if let errorMessage = viewModel.state.errorMessage {
+                    Text(errorMessage)
+                        .typography(.errorMessage)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 8)
+                        .padding(.top, 6)
+                }
             }
 
             Spacer()
+            Spacer()
 
-            BarButton(viewModel.state.canSubmit ? "회원 가입" : "인증번호 요청") {
-                if viewModel.state.canSubmit {
-                    viewModel.send(.user(.submitSignup))
-                } else {
+            if viewModel.state.otpCodeRequired == false {
+                BaseButton("인증번호 요청") {
                     viewModel.send(.user(.requestOtpCodeTapped))
                 }
+                .somniaryButtonStyle(.primary)
+                .disabled(viewModel.state.isValidEmail == false)
+            } else {
+                BaseButton("회원 가입") {
+                    if viewModel.state.canSubmit {
+                        viewModel.send(.user(.submitSignup))
+                    }
+                }
+                .somniaryButtonStyle(.primary)
+                .disabled(viewModel.state.canSubmit == false)
             }
-            .disabled(viewModel.state.canSubmit == false)
-            .somniaryButtonStyle(.primary)
+
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
