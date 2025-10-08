@@ -11,10 +11,10 @@ struct Typography {
     
     let font: Font
     let foregroundColor: Color
-    let lineLimit: Int
+    let lineLimit: Int?
     let disabledColor: Color
 
-    init(font: Font, foregroundColor: Color, lineLimit: Int = 1, disabledColor: Color = .white) {
+    init(font: Font, foregroundColor: Color, lineLimit: Int? = nil, disabledColor: Color = .white) {
         self.font = font
         self.foregroundColor = foregroundColor
         self.lineLimit = lineLimit
@@ -28,31 +28,31 @@ extension Typography {
     static let title = Typography(
         font: .title2.weight(.semibold),
         foregroundColor: .white,
-        lineLimit: 1
     )
 
     static let headline = Typography(
         font: .headline,
         foregroundColor: .white,
-        lineLimit: 1
     )
 
     static let body = Typography(
         font: .body,
         foregroundColor: .white,
-        lineLimit: 1
     )
 
     static let caption = Typography(
         font: .caption,
         foregroundColor: .white,
-        lineLimit: 1
     )
 
     static let text = Typography(
         font: .body,
         foregroundColor: .accentColor,
-        lineLimit: 1,
         disabledColor: Color(.systemGray)
+    )
+
+    static let errorMessage = Typography(
+        font: .caption,
+        foregroundColor: Color(.systemRed),
     )
 }
