@@ -51,7 +51,7 @@ extension Typography {
 
     static let text = Typography(
         font: .body,
-        foregroundColor: .primary,
+        foregroundColor: .accentColor,
         lineLimit: 1,
         disabledColor: Color(.systemGray)
     )

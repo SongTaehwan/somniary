@@ -28,9 +28,10 @@ struct SignUpCompletionView: View {
 
             Spacer()
 
-            BarButton("홈으로 가기") {
+            BaseButton("홈으로 가기") {
                 viewModel.send(.user(.signupCompletionTapped))
             }
+            .somniaryButtonStyle(.primary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)

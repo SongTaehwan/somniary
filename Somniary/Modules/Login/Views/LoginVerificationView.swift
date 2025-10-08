@@ -16,14 +16,15 @@ struct LoginVerificationView: View {
             TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.otpCode)
                 .maxLength(text: $viewModel.otpCode, limit: 6)
 
-            BarButton("로그인하기") {
+            BaseButton("로그인하기") {
                 viewModel.send(.user(.submitLogin))
             }
+            .somniaryButtonStyle(.primary)
             .disabled(viewModel.state.canSubmit == false)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
-        .navigationTitle("인증")
+        .navigationTitle("로그인 인증")
     }
 }
 

@@ -38,6 +38,7 @@ struct SignUpView: View {
                 }
             }
             .disabled(viewModel.state.canSubmit == false)
+            .somniaryButtonStyle(.primary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
