@@ -9,17 +9,21 @@ import SwiftUI
 
 struct SomniaryTextButtonStyle: SomniaryButtonStyling {
 
+    @Environment(\.isEnabled) var isEnabled: Bool
     @Environment(\.typography) var typographyOverride: Typography?
     @Environment(\.buttonSize) var buttonSizeOverride: ButtonSize?
-    @Environment(\.isEnabled) var isEnabled: Bool
+    @Environment(\.textButtonConfig) var styleConfigOverride: SomniaryTextButtonStyleConfig?
 
-    var pressedOpacity: Double = 0.7
-    var defaultTypography: Typography = .text
-    var defaultButtonSize: ButtonSize = .fit
+    private let defaultStyleConfig: SomniaryTextButtonStyleConfig
+
+    init(styleConfig: SomniaryTextButtonStyleConfig) {
+        self.defaultStyleConfig = styleConfig
+    }
 
     func makeBody(configuration: Configuration) -> some View {
-        let typography = typographyOverride ?? self.defaultTypography
-        let buttonSize = buttonSizeOverride ?? self.defaultButtonSize
+        let activeConfig = styleConfigOverride ?? defaultStyleConfig
+        let typography = typographyOverride ?? defaultStyleConfig.typography
+        let buttonSize = buttonSizeOverride ?? defaultStyleConfig.buttonSize
 
         configuration.label
             // Label 스타일
@@ -29,47 +33,7 @@ struct SomniaryTextButtonStyle: SomniaryButtonStyling {
             // 컨테이너 스타일
             .frame(width: buttonSize.width, height: buttonSize.height)
             .frame(maxWidth: buttonSize.maxWidth)
-            .opacity(configuration.isPressed ? self.pressedOpacity : 1.0)
+            .opacity(configuration.isPressed ? activeConfig.pressedOpacity : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
-}
-
-// MARK: - Style Presets
-extension SomniaryTextButtonStyle {
-    /// Primary 버튼 (강조)
-    static let primary = SomniaryTextButtonStyle()
-
-    /// Secondary 버튼 (보조)
-    static let secondary = SomniaryTextButtonStyle()
-
-    /// Destructive 버튼 (경고)
-    static let destructive = SomniaryTextButtonStyle(
-        defaultTypography: .init(font: .body, foregroundColor: Color(.systemRed), disabledColor: Color(.systemGray))
-    )
-}
-
-#Preview {
-    VStack(spacing: 8) {
-        Button("Primary") { }
-        .somniaryTextButtonStyle(.primary)
-
-        Button("Primary+disabled") { }
-        .somniaryTextButtonStyle(.primary)
-        .disabled(true)
-
-        Button("Secondary") { }
-        .somniaryTextButtonStyle(.secondary)
-
-        Button("Secondary+disabled") { }
-        .somniaryTextButtonStyle(.secondary)
-        .disabled(true)
-
-        Button("destructive") { }
-        .somniaryTextButtonStyle(.destructive)
-
-        Button("destructive+disabled") { }
-        .somniaryTextButtonStyle(.destructive)
-        .disabled(true)
-    }
-    .padding()
 }
