@@ -9,11 +9,7 @@ import SwiftUI
 
 extension View {
 
-    func somniaryButtonStyle(_ style: SomniaryButtonStyle) -> some View {
-        self.buttonStyle(style)
-    }
-
-    func somniaryTextButtonStyle(_ style: SomniaryTextButtonStyle) -> some View {
-        self.buttonStyle(style)
+    func somniaryButtonStyle(_ config: SomniaryButtonStyleConfig) -> some View {
+        self.buttonStyle(SomniaryButtonStyle(styleConfig: config))
     }
 }

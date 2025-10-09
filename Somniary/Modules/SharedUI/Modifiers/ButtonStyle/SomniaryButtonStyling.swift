@@ -8,10 +8,10 @@
 import SwiftUI
 
 protocol SomniaryButtonStyling: ButtonStyle {
+    associatedtype StyleConfig
+    
+    var isEnabled: Bool { get }
     var typographyOverride: Typography? { get }
     var buttonSizeOverride: ButtonSize? { get }
-    var isEnabled: Bool { get }
-
-    var defaultTypography: Typography { get }
-    var defaultButtonSize: ButtonSize { get }
+    var styleConfigOverride: StyleConfig? { get }
 }
