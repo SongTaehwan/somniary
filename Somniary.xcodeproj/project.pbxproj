@@ -33,6 +33,7 @@
 		E413834F2E713AE400F9A185 /* Somniary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Somniary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E413835C2E713AE400F9A185 /* SomniaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E41383662E713AE400F9A185 /* SomniaryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4D3F3A52E97472E0044E7CA /* Somniary.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Somniary.xctestplan; sourceTree = "<group>"; };
 		E4F501F62E78001A001E0B58 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -102,6 +103,7 @@
 		E41383462E713AE400F9A185 = {
 			isa = PBXGroup;
 			children = (
+				E4D3F3A52E97472E0044E7CA /* Somniary.xctestplan */,
 				E4F50A902E8E63D6001E0B58 /* Config */,
 				E4F501F62E78001A001E0B58 /* .gitignore */,
 				E41383512E713AE400F9A185 /* Somniary */,
