@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "2C4D22EE-6B13-4733-AF90-A87401382AD2",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Somniary.xcodeproj",
+      "identifier" : "E413834E2E713AE400F9A185",
+      "name" : "Somniary"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "skippedTests" : [
+        "SomniaryTests",
+        "SomniaryTests\/testExample()",
+        "SomniaryTests\/testPerformanceExample()"
+      ],
+      "target" : {
+        "containerPath" : "container:Somniary.xcodeproj",
+        "identifier" : "E413835B2E713AE400F9A185",
+        "name" : "SomniaryTests"
+      }
+    }
+  ],
+  "version" : 1
+}

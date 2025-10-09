@@ -26,13 +26,15 @@ struct LoginView: View {
             }
 
             VStack(spacing: 12) {
-                BarButton("애플 계정으로 로그인") {
+                BaseButton("애플 계정으로 로그인") {
                     viewModel.send(.user(.appleSignInTapped))
                 }
+                .somniaryButtonStyle(.primary)
 
-                BarButton("구글 계정으로 로그인") {
+                BaseButton("구글 계정으로 로그인") {
                     viewModel.send(.user(.googleSignInTapped))
                 }
+                .somniaryButtonStyle(.primary)
             }
 
             HStack(spacing: 12) {
@@ -47,18 +49,20 @@ struct LoginView: View {
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
 
-            BarButton("로그인") {
+            BaseButton("로그인") {
                 viewModel.send(.user(.loginTapped))
             }
+            .somniaryButtonStyle(.primary)
             .disabled(viewModel.email.isValidEmail == false)
 
             Separator()
 
             HStack {
                 Text("처음 방문 하셨나요?")
-                Button("회원 가입") {
+                BaseButton("회원 가입") {
                     viewModel.send(.user(.signUpTapped))
                 }
+                .somniaryTextButtonStyle(.primary)
             }
 
             Spacer()

@@ -31,81 +31,107 @@ fileprivate func reduceUserIntent(
     case .emailChanged(let text):
         newState.email = text
         newState.errorMessage = nil
-        return (newState, [])
+        
+        return (newState, [.logEvent("email_changed: \(text)")])
 
     case .otpCodeChanged(let text):
         newState.otpCode = text
         newState.errorMessage = nil
-        return (newState, [])
+
+        return (newState, [.logEvent("OTP_code_changed: \(text)")])
 
     case .loginTapped:
         guard newState.email.isValidEmail else {
             return (newState, [
-                .toast("올바른 이메일이 아닙니다."),
-                .logEvent("invalid_email")
+                .logEvent("invalid_email"),
+                .toast("올바른 이메일이 아닙니다.")
             ])
         }
 
+        let requestId = newState.latestRequestId ?? env.makeRequestId()
+        newState.otpCode = ""
+
         return (newState, [
-            .updateInputs(otpCode: ""),
-            .route(.navigateOtpVerification),
-            .logEvent("navigate_otp_verification")
+            .logEvent("reset_inputs"),
+            .updateTextField(otpCode: ""),
+            .logEvent("request_login"),
+            .requestLoginCode(email: newState.email, requestId: requestId),
         ])
 
     case .signUpTapped:
         newState.email = ""
         newState.otpCode = ""
+
         return (newState, [
-            .updateInputs(email: "", otpCode: ""),
-            .route(.navigateSignUp),
-            .logEvent("navigate_sign_up")
+            .logEvent("reset_inputs", level: .debug),
+            .updateTextField(email: "", otpCode: ""),
+            .logEvent("navigate_sign_up"),
+            .route(.navigateSignUp)
         ])
 
     case .requestOtpCodeTapped:
         let requestId = newState.latestRequestId ?? env.makeRequestId()
+
         return (newState, [
-            .verify(
-                email: newState.email,
-                otpCode: newState.otpCode,
-                type: "signup",
-                requestId: requestId
-            ),
-            .logEvent("request_otp_code")
+            .logEvent("request_otp_verification"),
+            .requestSignupCode(email: newState.email, requestId: requestId),
         ])
 
     case .appleSignInTapped:
         // TODO: SDK 연동
-        return (newState, [.logEvent("implementation required")])
+        return (newState, [.logEvent("apple_signin_implementation_required")])
 
     case .googleSignInTapped:
         // TODO: SDK 연동
-        return (newState, [.logEvent("implementation required")])
+        return (newState, [.logEvent("google_signin_implementation_required")])
 
     case .signupCompletionTapped:
         return (newState, [
-            .route(.navigateHome),
-            .logEvent("login_flow_completed")
+            .logEvent("login_flow_completed"),
+            .route(.navigateHome)
         ])
 
     case .submitSignup:
         guard newState.canSubmit else {
-            return (newState, [.toast("입력 값을 확인해주세요")])
+            return (newState, [
+                .logEvent("invalid_signup_input"),
+                .toast("입력 값을 확인해주세요")
+            ])
         }
 
         let requestId = newState.latestRequestId ?? env.makeRequestId()
         newState.latestRequestId = requestId
         newState.isLoading = true
-        return (newState, [.signup(email: newState.email, requestId: requestId)])
+
+        return (newState, [
+            .logEvent("request_signup"),
+            .verify(
+                email: newState.email,
+                otpCode: newState.otpCode,
+                requestId: requestId
+            )
+        ])
 
     case .submitLogin:
         guard newState.canSubmit else {
-            return (newState, [.toast("입력 값을 확인해주세요")])
+            return (newState, [
+                .logEvent("invalid_login_input"),
+                .toast("입력 값을 확인해주세요")
+            ])
         }
 
         let requestId = newState.latestRequestId ?? env.makeRequestId()
         newState.latestRequestId = requestId
         newState.isLoading = true
-        return (newState, [.login(email: newState.email, requestId: requestId)])
+
+        return (newState, [
+            .logEvent("request_login"),
+            .verify(
+                email: newState.email,
+                otpCode: newState.otpCode,
+                requestId: requestId
+            )
+        ])
     }
 }
 
@@ -131,11 +157,20 @@ fileprivate func reduceInternalIntent(
 
         switch result {
         case .success:
-            return (newState, [.route(.navigateHome)])
+            newState.requirement = .otpCode
+            return (newState,[
+                .logEvent("login_success", level: .debug),
+                .logEvent("navigate_otp_verification"),
+                .route(.navigateOtpVerification)
+            ])
 
         case .failure(let error):
+            newState.requirement = .errorHandling
             newState.errorMessage = error.readableMessage
-            return (newState, [.toast(error.readableMessage)])
+            return (newState, [
+                .logEvent("login_failed \(error.readableMessage)", level: .error),
+                .toast(error.readableMessage)
+            ])
         }
     case .signupResponse(let result):
         newState.isLoading = false
@@ -143,20 +178,36 @@ fileprivate func reduceInternalIntent(
 
         switch result {
         case .success:
-            return (newState, [.route(.navigateSignupCompletion)])
+            newState.requirement = .otpCode
+            return (newState, [
+                .logEvent("signup_success", level: .debug)
+            ])
 
         case .failure(let error):
+            newState.requirement = .errorHandling
             newState.errorMessage = error.readableMessage
-            return (newState, [.toast(error.readableMessage)])
+            return (newState, [
+                .logEvent("signup_failed \(error.readableMessage)", level: .error),
+                .toast(error.readableMessage)
+            ])
         }
 
     case .verifyResponse(let result):
         switch result {
-        case .success:
-            return (newState, [.toast("이메일 발송 완료")])
+        case .success(let token):
+            return (newState, [
+                .logEvent("otp_verification_success", level: .debug),
+                .storeToken(token),
+                .logEvent("navigate_home"),
+                .route(.navigateHome)
+            ])
+
         case .failure(let error):
             newState.errorMessage = error.readableMessage
-            return (newState, [.toast(error.readableMessage)])
+            return (newState, [
+                .logEvent("otp_verfication_failed \(error.readableMessage)", level: .error),
+                .toast(error.readableMessage),
+            ])
         }
     }
 }
@@ -168,13 +219,28 @@ fileprivate func reduceNavigationIntent(
 ) -> (LoginViewModel.LoginState, [LoginEffectPlan]) {
     switch intent {
     case .routeToHome:
-        return (state, [.route(.navigateHome)])
+        return (state, [
+            .logEvent("navigate_home"),
+            .route(.navigateHome)
+        ])
+
     case .routeToSignUp:
-        return (state, [.route(.navigateSignUp)])
+        return (state, [
+            .logEvent("navigate_signup"),
+            .route(.navigateSignUp)
+        ])
+
     case .routeToVerification:
-        return (state, [.route(.navigateOtpVerification)])
+        return (state, [
+            .logEvent("navigate_otp_verification"),
+            .route(.navigateOtpVerification)
+        ])
+
     case .routeToSignUpCompletion:
-        return (state, [.route(.navigateSignupCompletion)])
+        return (state, [
+            .logEvent("navigate_signup_completion"),
+            .route(.navigateSignupCompletion)
+        ])
     }
 }
 
@@ -192,12 +258,16 @@ func combinedReducer(
     switch intent {
     case .lifecycle(let intent):
         return reduceLifecycleIntent(state: state, intent: intent, env: env)
+
     case .user(let intent):
         return reduceUserIntent(state: state, intent: intent, env: env)
+
     case .systemExtenral(let intent):
         return reduceExternalIntent(state: state, intent: intent, env: env)
+
     case .systemInternal(let intent):
         return reduceInternalIntent(state: state, intent: intent, env: env)
+
     case .navigation(let intent):
         return reduceNavigationIntent(state: state, intent: intent, env: env)
     }

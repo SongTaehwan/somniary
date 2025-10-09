@@ -22,7 +22,7 @@ extension SomniaryEndpoint {
     }
 
     /// DIP 트레이드 오프
-    var headers: HTTPHeaders {
+    var headers: HTTPHeaders? {
         return HTTPHeaders([
             "apiKey": AppInfo.shared.domainClientKey
         ])

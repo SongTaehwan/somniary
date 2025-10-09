@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: 도메인 에러 객체로 교체
 enum LoginError: Error, Equatable {
     case invalidEmail
     case invalidPassword
@@ -30,6 +31,7 @@ enum LoginError: Error, Equatable {
     }
 }
 
+/// 도메인 객체로 변환 담당
 struct RemoteAuthRepository: AuthReposable {
 
     private let client: any SomniaryNetworking<AuthEndpoint>
@@ -38,18 +40,13 @@ struct RemoteAuthRepository: AuthReposable {
         self.client = client
     }
 
-    func signup(email: String, idempotencyKey: String?) async throws -> VoidResponse {
-        let result = try await client.request(.signup(email: email), type: VoidResponse.self)
+    func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async throws -> VoidResponse {
+        let result = try await client.request(.requestOtpCode(email: email, createUser: createUser), type: VoidResponse.self)
         return result
     }
 
-    func login(email: String, idempotencyKey: String? = nil) async throws -> VoidResponse {
-        let result = try await client.request(.login(email: email), type: VoidResponse.self)
-        return result
-    }
-
-    func verify(email: String, otpCode: String, type: String) async throws -> Token {
-        let result = try await client.request(.verify(email: email, otpCode: otpCode, type: .magiclink), type: Token.self)
-        return result
+    func verify(email: String, otpCode: String) async throws -> TokenEntity {
+        let result = try await client.request(.verify(email: email, otpCode: otpCode), type: Token.self)
+        return TokenEntity(accessToken: result.accessToken, refreshToken: result.refreshToken)
     }
 }

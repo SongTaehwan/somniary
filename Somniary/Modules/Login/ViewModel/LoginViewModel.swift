@@ -8,24 +8,44 @@
 import SwiftUI
 import Combine
 
-extension Token: Equatable {
-    static func == (lhs: Token, rhs: Token) -> Bool {
-        lhs.accessToken == rhs.accessToken && lhs.refreshToken == rhs.refreshToken
-    }
-}
-
+// TODO: 로그인 422 에러 처리
+// TODO: TextField disabled 스타일
+// TODO: Loading indicator
+// TODO: Apple login
+// TODO: Google login
 final class LoginViewModel: ViewModelType {
+
+    typealias LoginExecutor = any EffectExecuting<LoginEffectPlan, LoginIntent>
 
     // MARK: State definition
     struct LoginState: Equatable {
+        enum Requirement {
+            case email
+            case otpCode
+            case errorHandling
+        }
+
+        var requirement = Requirement.email
+
         var email: String = ""
         var otpCode: String = ""
         var isLoading = false
         var errorMessage: String?
         /// 멱등, 추적용
         var latestRequestId: UUID?
+
         var canSubmit: Bool {
-            email.isValidEmail && otpCode.count == 6 && isLoading == false
+            self.otpCodeRequired &&
+            self.email.isValidEmail &&
+            self.otpCode.count == 6
+        }
+
+        var isValidEmail: Bool {
+            self.email.isValidEmail
+        }
+
+        var otpCodeRequired: Bool {
+            self.requirement == .otpCode
         }
     }
 
@@ -42,7 +62,7 @@ final class LoginViewModel: ViewModelType {
     // MARK: Private properties
     private var cancellables = Set<AnyCancellable>()
     private let intents = PassthroughSubject<LoginIntent, Never>()
-    private let executor: any EffectExecuting<LoginEffectPlan, LoginIntent>;
+    private let executor: LoginExecutor
     private let coordinator: LoginCoordinator
     private let environment: LoginEnvironment
 
@@ -53,7 +73,7 @@ final class LoginViewModel: ViewModelType {
     init(
         coordinator: LoginCoordinator,
         environment: LoginEnvironment,
-        executor: any EffectExecuting<LoginEffectPlan, LoginIntent>
+        executor: LoginExecutor
     ) {
         self.coordinator = coordinator
         self.environment = environment
@@ -67,33 +87,46 @@ final class LoginViewModel: ViewModelType {
 
     /// 사용자 인터렉션 바인딩
     private func binding() {
-        // 이메일 입력 처리
+        self.bindTextFields()
+        self.bindButtons()
+    }
+
+    /// TextField -> State 로의 단방향 바인딩
+    private func bindTextFields() {
+        let emailInState = $state.map(\.email)
         $email
-            .dropFirst()
             .removeDuplicates()
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
+            .onlyWhenDifferent(from: emailInState)
             .sink { [weak self] in
                 self?.send(.user(.emailChanged($0)))
             }
             .store(in: &cancellables)
 
         // OTP 코드 입력 처리
+        let codeInState = $state.map(\.otpCode)
         $otpCode
-            .dropFirst()
             .removeDuplicates()
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
+            .onlyWhenDifferent(from: codeInState)
             .sink { [weak self] in
                 self?.send(.user(.otpCodeChanged($0)))
             }
             .store(in: &cancellables)
+    }
 
+    private func bindButtons() {
         // 로그인 버튼 처리
         let submitLoginTapped = intents.partition {
             $0 == .user(.submitLogin) && self.state.isLoading == false
         }
 
         submitLoginTapped.included
-            .throttle(for: .milliseconds(500), scheduler: DispatchQueue.main, latest: false)
+            .throttle(
+                for: .milliseconds(500),
+                scheduler: DispatchQueue.main,
+                latest: false
+            )
             .sink { [weak self] _ in
                 self?.handle(.user(.submitLogin))
             }
@@ -105,7 +138,11 @@ final class LoginViewModel: ViewModelType {
         }
 
         submitSignupTapped.included
-            .throttle(for: .milliseconds(500), scheduler: DispatchQueue.main, latest: false)
+            .throttle(
+                for: .milliseconds(500),
+                scheduler: DispatchQueue.main,
+                latest: false
+            )
             .sink { [weak self] _ in
                 self?.handle(.user(.submitSignup))
             }
@@ -115,7 +152,11 @@ final class LoginViewModel: ViewModelType {
         let signupCompletionTapped = submitLoginTapped.excluded.partition { $0 == .user(.signupCompletionTapped) }
 
         signupCompletionTapped.included
-            .throttle(for: .milliseconds(500), scheduler: DispatchQueue.main, latest: false)
+            .throttle(
+                for: .milliseconds(500),
+                scheduler: DispatchQueue.main,
+                latest: false
+            )
             .sink { [weak self] _ in
                 self?.handle(.user(.signupCompletionTapped))
             }
@@ -135,7 +176,7 @@ final class LoginViewModel: ViewModelType {
         // 네비게이션, UI 출력 관련 output 은 VM 에 위임
         for plan in plans {
             switch plan.type {
-            case let .updateInputs(email, otpCode):
+            case let .updateTextField(email, otpCode):
                 if let email {
                     self.email = email
                 }

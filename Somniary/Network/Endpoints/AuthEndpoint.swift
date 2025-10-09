@@ -10,14 +10,8 @@ import Alamofire
 
 enum AuthEndpoint: SomniaryEndpoint {
 
-    enum VerificationType: String, Encodable {
-        case magiclink
-        case signup
-    }
-
-    case login(email: String)
-    case signup(email: String)
-    case verify(email: String, otpCode: String, type: VerificationType)
+    case requestOtpCode(email: String, createUser: Bool)
+    case verify(email: String, otpCode: String)
     case refreshToken(refreshToken: String)
     case logout
 }
@@ -25,8 +19,8 @@ enum AuthEndpoint: SomniaryEndpoint {
 extension AuthEndpoint {
     var path: String {
         switch self {
-        case .login, .signup:
-            return "/auth/v1/magiclink"
+        case .requestOtpCode:
+            return "/auth/v1/otp"
         case .verify:
             return "/auth/v1/verify"
         case .refreshToken:
@@ -38,25 +32,32 @@ extension AuthEndpoint {
 
     var method: HTTPMethod { .post }
 
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .logout:
+            return [URLQueryItem(name: "scope", value: "local")]
+        default:
+            return nil
+        }
+    }
+
     var payload: RequestDataType? {
         switch self {
-        case .verify(email: let email, otpCode: let otpCode, type: let verificationType):
+        case .verify(email: let email, otpCode: let otpCode):
             return .jsonObject(
                 data: [
                     "email": email,
                     "token": otpCode,
-                    "type": verificationType.rawValue
+                    "type": "email"
                 ],
                 encoder: JSONEncoding.default
             )
-        case .login(email: let email):
+        case .requestOtpCode(email: let email, let createUser):
             return .jsonObject(
-                data: ["email": email],
-                encoder: JSONEncoding.default
-            )
-        case .signup(email: let email):
-            return .jsonObject(
-                data: ["email": email],
+                data: [
+                    "email": email,
+                    "create_user": createUser
+                ],
                 encoder: JSONEncoding.default
             )
         case .refreshToken(refreshToken: let token):
@@ -64,8 +65,9 @@ extension AuthEndpoint {
                 data: ["refresh_token": token],
                 encoder: JSONEncoding.default
             )
-        default:
-            return nil
+
+        case .logout:
+            return .plain
         }
     }
 }

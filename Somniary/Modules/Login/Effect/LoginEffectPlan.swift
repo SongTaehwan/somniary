@@ -12,15 +12,17 @@ struct LoginEffectPlan: Equatable {
 
     enum EffectType: Equatable {
         /// API effect
-        case login(email: String, requestId: UUID)
-        case signup(email: String, requestId: UUID)
-        case verify(email: String, otpCode: String, type: String, requestId: UUID)
+        case requestLoginCode(email: String, requestId: UUID)
+        case requestSignupCode(email: String, requestId: UUID)
+        case verify(email: String, otpCode: String, requestId: UUID)
 
+        /// side effect
         case logEvent(String)
+        case storeToken(TokenEntity)
 
         /// one-off UI outputs, ViewModel 에 의해 처리됨
         case showToast(String)
-        case updateInputs(email: String?, otpCode: String?)
+        case updateTextField(email: String?, otpCode: String?)
 
         /// one-off navigations, ViewModel 에 의해 처리됨
         case navigateHome
@@ -73,14 +75,14 @@ extension LoginEffectPlan {
         return .make(type)
     }
 
-    static func login(
+    static func requestLoginCode(
         email: String,
         requestId: UUID, 
         retry: Int = 0,
         timeout: Int = 0
     ) -> Self {
         return .make(
-            .login(
+            .requestLoginCode(
                 email: email,
                 requestId: requestId
             ),
@@ -89,14 +91,14 @@ extension LoginEffectPlan {
         )
     }
 
-    static func signup(
+    static func requestSignupCode(
         email: String,
         requestId: UUID,
         retry: Int = 0,
         timeout: Int = 0
     ) -> Self {
         return .make(
-            .signup(
+            .requestSignupCode(
                 email: email,
                 requestId: requestId
             ),
@@ -108,7 +110,6 @@ extension LoginEffectPlan {
     static func verify(
         email: String,
         otpCode: String,
-        type: String,
         requestId: UUID,
         retry: Int = 0,
         timeout: Int = 0
@@ -117,7 +118,6 @@ extension LoginEffectPlan {
             .verify(
                 email: email,
                 otpCode: otpCode,
-                type: type,
                 requestId: requestId
             ),
             retry: retry,
@@ -125,11 +125,23 @@ extension LoginEffectPlan {
         )
     }
 
-    static func logEvent(_ message: String) -> Self {
-        return .make(.logEvent(message))
+    enum LogLevel: String {
+        case debug = "🐛"
+        case info = "ℹ️"
+        case error = "🚨"
+        case warning = "⚠️"
     }
 
-    static func updateInputs(email: String? = nil, otpCode: String? = nil) -> Self {
-        return .make(.updateInputs(email: email, otpCode: otpCode))
+    static func logEvent(_ message: String, level: LogLevel = LogLevel.info) -> Self {
+        let log = "[\(level.rawValue)] \(message)"
+        return .make(.logEvent(log))
+    }
+
+    static func updateTextField(email: String? = nil, otpCode: String? = nil) -> Self {
+        return .make(.updateTextField(email: email, otpCode: otpCode))
+    }
+
+    static func storeToken(_ token: TokenEntity) -> Self {
+        return .make(.storeToken(token))
     }
 }
