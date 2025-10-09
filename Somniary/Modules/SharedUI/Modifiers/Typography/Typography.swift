@@ -9,10 +9,10 @@ import SwiftUI
 
 struct Typography {
     
-    let font: Font
-    let foregroundColor: Color
-    let lineLimit: Int?
-    let disabledColor: Color
+    private(set) var font: Font
+    private(set) var foregroundColor: Color
+    private(set) var lineLimit: Int?
+    private(set) var disabledColor: Color
 
     init(font: Font, foregroundColor: Color, lineLimit: Int? = nil, disabledColor: Color = .white) {
         self.font = font
@@ -22,27 +22,43 @@ struct Typography {
     }
 }
 
-// MARK: 프리셋
+// MARK: 부분 커스텀
+extension Typography {
+
+    func foregroundColor(_ color: Color) -> Self {
+        var copy = self
+        copy.foregroundColor = color
+        return copy
+    }
+
+    func disabledColor(_ color: Color) -> Self {
+        var copy = self
+        copy.disabledColor = color
+        return copy
+    }
+}
+
+// MARK: Presets
 extension Typography {
 
     static let title = Typography(
         font: .title2.weight(.semibold),
-        foregroundColor: .white,
+        foregroundColor: .primary,
     )
 
     static let headline = Typography(
         font: .headline,
-        foregroundColor: .white,
+        foregroundColor: .primary,
     )
 
     static let body = Typography(
         font: .body,
-        foregroundColor: .white,
+        foregroundColor: .primary,
     )
 
     static let caption = Typography(
         font: .caption,
-        foregroundColor: .white,
+        foregroundColor: .primary,
     )
 
     static let text = Typography(
