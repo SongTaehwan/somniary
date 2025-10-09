@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SomniaryButtonStyleConfig {
+    
     var backgroundColor: Color = .clear
     var disabledColor: Color = Color(.systemGray4)
     var cornerRadius: CGFloat = 12
