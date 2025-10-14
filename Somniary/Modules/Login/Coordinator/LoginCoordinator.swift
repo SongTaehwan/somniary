@@ -20,7 +20,7 @@ final class LoginCoordinator: FlowCoordinator {
         let dataSource = RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)
         let reducerEnv = LoginReducerEnvironment { UUID() }
         let flowEnv = LoginEnvironment(auth: dataSource, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
-        let executor = LoginExecutor(dataSource: dataSource)
+        let executor = LoginExecutor(dataSource: dataSource, tokenRepository: TokenRepository.shared)
         return LoginViewModel(coordinator: self, environment: flowEnv, executor: executor)
     }()
 

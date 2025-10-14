@@ -13,9 +13,11 @@ final class LoginExecutor: EffectExecuting {
 
     private var tasks: [UUID: Task<Void, Never>] = [:]
     private let authRepository: AuthReposable
+    private let tokenRepository: TokenReposable
 
-    init(dataSource: AuthReposable) {
+    init(dataSource: AuthReposable, tokenRepository: TokenReposable) {
         self.authRepository = dataSource
+        self.tokenRepository = tokenRepository
     }
 
     func perform(_ plan: Plan, send: @escaping (Intent) -> Void) {
@@ -75,8 +77,7 @@ final class LoginExecutor: EffectExecuting {
             print(message)
 
         case .storeToken(let token):
-            TokenRepository.shared.updateToken(.init(accessToken: token.accessToken, refreshToken: token.refreshToken))
-
+            self.tokenRepository.updateToken(.init(accessToken: token.accessToken, refreshToken: token.refreshToken))
 
         case let .authenticateWithApple(credential, requestId):
             tasks[requestId]?.cancel()
