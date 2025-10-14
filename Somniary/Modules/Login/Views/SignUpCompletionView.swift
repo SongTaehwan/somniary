@@ -42,7 +42,8 @@ struct SignUpCompletionView: View {
 #Preview {
     let environment = LoginEnvironment(
         auth: RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient),
-        reducerEnvironment: LoginReducerEnvironment { UUID() }
+        reducerEnvironment: LoginReducerEnvironment { UUID() },
+        crypto: NonceGenerator.shared
     )
     SignUpCompletionView(viewModel: .init(
         coordinator: .init(),

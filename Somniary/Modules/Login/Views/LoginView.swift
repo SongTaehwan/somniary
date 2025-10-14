@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
 
@@ -26,10 +27,14 @@ struct LoginView: View {
             }
 
             VStack(spacing: 12) {
-                BaseButton("애플 계정으로 로그인") {
-                    viewModel.send(.user(.appleSignInTapped))
+                SignInWithAppleButton(.signIn) { request in
+                    viewModel.configureAppleSignInRequest(request)
+                } onCompletion: { result in
+                    viewModel.handleAppleSignInCompletion(result)
                 }
-                .somniaryButtonStyle(.primary)
+                .signInWithAppleButtonStyle(.black)
+                .frame(maxHeight: 56)
+                .cornerRadius(12)
 
                 BaseButton("구글 계정으로 로그인") {
                     viewModel.send(.user(.googleSignInTapped))
@@ -81,7 +86,8 @@ struct LoginView: View {
 #Preview {
     let environment = LoginEnvironment(
         auth: RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient),
-        reducerEnvironment: LoginReducerEnvironment { UUID() }
+        reducerEnvironment: LoginReducerEnvironment { UUID() },
+        crypto: NonceGenerator.shared
     )
     LoginView(viewModel: .init(
         coordinator: .init(),

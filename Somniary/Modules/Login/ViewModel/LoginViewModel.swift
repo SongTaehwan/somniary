@@ -7,18 +7,18 @@
 
 import SwiftUI
 import Combine
+import AuthenticationServices
 
 // TODO: 로그인 422 에러 처리
-// TODO: TextField disabled 스타일
-// TODO: Loading indicator
-// TODO: Apple login
-// TODO: Google login
+// TODO: Loading indicator 정책 정의
+// TODO: 사용자 노출 에러, 내부 에러 설계
+// TODO: nonce 기능적 1차 완성
 final class LoginViewModel: ViewModelType {
 
     typealias LoginExecutor = any EffectExecuting<LoginEffectPlan, LoginIntent>
 
     // MARK: State definition
-    struct LoginState: Equatable {
+    struct LoginState: Equatable, Copyable {
         enum Requirement {
             case email
             case otpCode
@@ -33,6 +33,8 @@ final class LoginViewModel: ViewModelType {
         var errorMessage: String?
         /// 멱등, 추적용
         var latestRequestId: UUID?
+
+        var appleNonce: String?
 
         var canSubmit: Bool {
             self.otpCodeRequired &&
@@ -210,4 +212,46 @@ final class LoginViewModel: ViewModelType {
     func send(_ intent: LoginIntent) {
         intents.send(intent)
     }
+}
+
+// MARK: 플랫폼 관련 메서드
+extension LoginViewModel {
+    
+    func configureAppleSignInRequest(_ request: ASAuthorizationAppleIDRequest) {
+        let nonce = environment.crypto.generateSecureRandom(length: 32)
+
+        // 비즈니스 로직에 따른 스코프 결정
+        request.requestedScopes = [.email, .fullName]
+        request.nonce = environment.crypto.sha256(nonce)
+
+        // 테스트 검증 및 추적용
+        self.state.appleNonce = nonce
+        // 로딩 인디케이터 표시 및 로그 출력
+        self.send(.systemExtenral(.appleLoginRequest))
+    }
+
+    /// 애플 로그인 결과를 매핑하여 LoginIntent 방출
+    /// - Note: View → ViewModel 경계에서 플랫폼 타입 수용
+    func handleAppleSignInCompletion(_ result: Result<ASAuthorization, Error>) {
+        guard let nonce = self.state.appleNonce else {
+           // Nonce가 없으면 에러로 처리
+           let error = AppleLoginError.missingNonce
+           self.send(.systemExtenral(.appleLoginCompleted(.failure(error))))
+           return
+       }
+
+        // ViewModel 내부에서 도메인 타입으로 변환
+        let domainResult = result
+            .mapError(AppleLoginError.init)
+            .flatMap { authorization in
+                AppleSignInMapper.toCredential(authorization, expectedNonce: nonce)
+            }
+
+        self.state.appleNonce = nil
+
+        // 도메인 Intent 발행
+        self.send(.systemExtenral(.appleLoginCompleted(domainResult)))
+    }
+
+    // TODO: Google login
 }

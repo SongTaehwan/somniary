@@ -48,7 +48,8 @@ struct LoginVerificationView: View {
 #Preview {
     let environment = LoginEnvironment(
         auth: RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient),
-        reducerEnvironment: LoginReducerEnvironment { UUID() }
+        reducerEnvironment: LoginReducerEnvironment { UUID() },
+        crypto: NonceGenerator.shared
     )
     LoginVerificationView(viewModel: .init(
         coordinator: .init(),
