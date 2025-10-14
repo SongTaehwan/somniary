@@ -7,17 +7,23 @@
 
 import Foundation
 
-// MARK: Intent
+/// 로그인 Intent
+/// - note: 도메인 타입을 사용하여 SDK 등의 의존성을 최소화하는 것을 원칙으로 한다.
 internal enum LoginIntent: Equatable {
 
     // MARK: View Lifecycle
     enum LifecycleIntent: Equatable { case appeared, disappeared }
 
     // MARK: 푸시, 딥링크, 앱 설정 변경, 네트워크 재연결
-    enum ExtenralIntent: Equatable { case deepLink(URL), networkReachable(Bool) }
+    enum SystemExtenralIntent: Equatable {
+        case deepLink(URL)
+        case networkReachable(Bool)
+        case appleLoginRequest
+        case appleLoginCompleted(Result<AppleCredential, AppleLoginError>)
+    }
 
     // MARK: Internal(Effect)
-    enum InternalIntent: Equatable {
+    enum SystemInternalIntent: Equatable {
         case loginResponse(Result<VoidResponse, LoginError>)  // 로그인 API 결과 처리
         case signupResponse(Result<VoidResponse, LoginError>) // 회원가입 API 결과 처리
         case verifyResponse(Result<TokenEntity, LoginError>)
@@ -33,7 +39,6 @@ internal enum LoginIntent: Equatable {
         case loginTapped
         case requestOtpCodeTapped
 
-        case appleSignInTapped // SDK 연결
         case googleSignInTapped // SDK 연결
         case signupCompletionTapped
     }
@@ -53,10 +58,10 @@ internal enum LoginIntent: Equatable {
     case user(UserIntent)
 
     // External(System) - 푸시, 딥링크, 앱 설정 변경, 네트워크 재연결
-    case systemExtenral(ExtenralIntent)
+    case systemExtenral(SystemExtenralIntent)
 
     // Internal(Effect)
-    case systemInternal(InternalIntent)
+    case systemInternal(SystemInternalIntent)
 
     // Navigation
     case navigation(NavigationIntent)
