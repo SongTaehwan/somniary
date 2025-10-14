@@ -77,6 +77,23 @@ final class LoginExecutor: EffectExecuting {
         case .storeToken(let token):
             TokenRepository.shared.updateToken(.init(accessToken: token.accessToken, refreshToken: token.refreshToken))
 
+
+        case let .authenticateWithApple(credential, requestId):
+            tasks[requestId]?.cancel()
+            tasks[requestId] = Task {
+                defer {
+                    tasks[requestId] = nil
+                }
+
+                let result: Result<TokenEntity, LoginError> = await Result.catching {
+                    try await authRepository.verify(credential: credential, idempotencyKey: nil)
+                } mapError: {
+                    $0 as? LoginError ?? .unknown
+                }
+
+                guard !Task.isCancelled else { return }
+                await MainActor.run { send(.systemInternal(.verifyResponse(result))) }
+            }
         default:
             break
         }
