@@ -45,8 +45,13 @@ struct RemoteAuthRepository: AuthReposable {
         return result
     }
 
-    func verify(email: String, otpCode: String) async throws -> TokenEntity {
+    func verify(email: String, otpCode: String, idempotencyKey: String?) async throws -> TokenEntity {
         let result = try await client.request(.verify(email: email, otpCode: otpCode), type: Token.self)
+        return TokenEntity(accessToken: result.accessToken, refreshToken: result.refreshToken)
+    }
+
+    func verify(credential: AppleCredential, idempotencyKey: String?) async throws -> TokenEntity {
+        let result = try await client.request(.authenticateWithApple(creadential: credential), type: Token.self)
         return TokenEntity(accessToken: result.accessToken, refreshToken: result.refreshToken)
     }
 }

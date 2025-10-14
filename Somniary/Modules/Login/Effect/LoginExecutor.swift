@@ -62,7 +62,7 @@ final class LoginExecutor: EffectExecuting {
                 }
 
                 let result: Result<TokenEntity, LoginError> = await Result.catching {
-                    try await authRepository.verify(email: email, otpCode: otpCode)
+                    try await authRepository.verify(email: email, otpCode: otpCode, idempotencyKey: nil)
                 } mapError: {
                     $0 as? LoginError ?? .unknown
                 }
