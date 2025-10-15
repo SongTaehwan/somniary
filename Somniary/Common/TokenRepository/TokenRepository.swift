@@ -13,11 +13,9 @@ enum TokenStorageKey: String, CaseIterable {
 
 typealias TokenStoring = any KeyStoring<TokenStorageKey>
 
-protocol TokenReposable {
-    func getAccessToken() -> String?
-    func getRefreshToken() -> String?
-    func updateToken(_ token: TokenEntity)
-    func clear()
+enum TokenRepositoryError: Error {
+    case storageFailure(underlying: Error)
+    case repositoryDeallocated
 }
 
 // TODO: Register into DIC
@@ -83,11 +81,19 @@ extension TokenRepository {
     }
 
     /// 토큰 정보 업데이트
-    func updateToken(_ token: TokenEntity) {
-        self.queue.async(flags: .barrier) { [weak self] in
-            guard let self else { return }
+    func updateToken(_ token: TokenEntity) throws {
+        try self.queue.sync(flags: .barrier) { [weak self] in
+            guard let self else {
+                throw TokenRepositoryError.repositoryDeallocated
+            }
+
             self.token = token
-            try? self.storage.save(token, for: .tokenPair)
+
+            do {
+                try self.storage.save(token, for: .tokenPair)
+            } catch {
+                throw TokenRepositoryError.storageFailure(underlying: error)
+            }
         }
     }
 
