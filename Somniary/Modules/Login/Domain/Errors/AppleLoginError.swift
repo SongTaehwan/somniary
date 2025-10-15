@@ -7,42 +7,132 @@
 
 import Foundation
 
-enum AppleLoginError: Equatable, LocalizedError {
+enum AppleLoginErrorDescriptor: String, ErrorDescriptor {
+
     case cancelled
     case invalidResponse
     case notHandled
     case failed
     case missingNonce
-    case unknown(String)
+    case unknown
 
     init(from error: Error) {
         let nsError = error as NSError
 
         if nsError.domain == "com.apple.AuthenticationServices.AuthorizationError" {
             switch nsError.code {
-            // ASAuthorizationError.canceled
+                // ASAuthorizationError.canceled
             case 1001: self = .cancelled
-            // ASAuthorizationError.invalidResponse
+                // ASAuthorizationError.invalidResponse
             case 1002: self = .invalidResponse
-            // ASAuthorizationError.notHandled
+                // ASAuthorizationError.notHandled
             case 1003: self = .notHandled
-            // ASAuthorizationError.failed
+                // ASAuthorizationError.failed
             case 1004: self = .failed
-            default: self = .unknown(error.localizedDescription)
+            default: self = .unknown
             }
         } else {
-            self = .unknown(error.localizedDescription)
+            self = .unknown
         }
     }
 
-    var errorDescription: String {
+    // MARK: Protocols
+    var userMessage: String {
         switch self {
         case .cancelled: return "로그인이 취소되었습니다."
         case .invalidResponse: return "잘못된 응답입니다."
         case .notHandled: return "처리할 수 없는 요청입니다."
         case .failed: return "로그인에 실패했습니다."
         case .missingNonce: return "보안 검증 실패. 다시 시도해주세요."
-        case .unknown(let message): return message
+        case .unknown: return "알 수 없는 오류 발생"
         }
+    }
+
+    var severity: ErrorSeverity {
+        switch self {
+        case .cancelled:
+            return .warning
+        default:
+            return .critical
+        }
+    }
+
+    var domain: DomainType {
+        return .auth
+    }
+}
+
+struct AppleLoginErrorContext: ErrorContext, Equatable {
+
+    let errorSnaphot: ErrorSnapshot?
+    let errorOrigin: ErrorOrigin
+
+    init(
+        errorSnaphot: ErrorSnapshot? = nil,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        self.errorSnaphot = errorSnaphot
+        self.errorOrigin = ErrorOrigin(
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+}
+
+typealias AppleLoginError = SomniaryError<AppleLoginErrorDescriptor, AppleLoginErrorContext>
+
+extension AppleLoginError {
+    static func from(
+        _ error: Error,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) -> Self {
+        return AppleLoginError(
+            category: .init(from: error),
+            context: .init(
+                errorSnaphot: .init(from: error),
+                file: file,
+                function: function,
+                line: line
+            )
+        )
+    }
+
+    static func invalidResponse(
+        snapshot: ErrorSnapshot? = nil,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) -> Self {
+        return AppleLoginError(
+            category: .invalidResponse,
+            context: .init(
+                errorSnaphot: snapshot,
+                file: file,
+                function: function,
+                line: line
+            )
+        )
+    }
+
+    static func missingNonce(
+        snapshot: ErrorSnapshot? = nil,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) -> Self {
+        return AppleLoginError(
+            category: .missingNonce,
+            context: .init(
+                errorSnaphot: snapshot,
+                file: file,
+                function: function,
+                line: line
+            )
+        )
     }
 }
