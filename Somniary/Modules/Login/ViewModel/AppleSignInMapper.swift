@@ -13,13 +13,13 @@ enum AppleSignInMapper {
     /// ASAuthorization을 도메인 타입으로 변환
     static func toCredential(_ authorization: ASAuthorization, expectedNonce: String) -> Result<AppleCredential, AppleLoginError> {
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-            return .failure(.invalidResponse)
+            return .failure(.invalidResponse())
         }
         
         guard let identityToken = credential.identityToken
             .flatMap({ String(data: $0, encoding: .utf8) })
         else {
-            return .failure(.invalidResponse)
+            return .failure(.invalidResponse())
         }
 
         return .success(AppleCredential(

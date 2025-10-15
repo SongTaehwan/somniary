@@ -157,11 +157,11 @@ fileprivate func reduceExternalIntent(
         ])
     case .appleLoginCompleted(.failure(let error)):
         newState.isLoading = false
-        newState.errorMessage = error.errorDescription
+        newState.errorMessage = error.userMessage
 
         return (newState, [
-            .toast(error.errorDescription),
-            .logEvent("failed_apple_login: \(error.errorDescription)", level: .error)
+            .toast(error.userMessage),
+            .logEvent("failed_apple_login: \(error.userMessage)", level: .error)
         ])
     default:
         return (state, [
@@ -193,10 +193,10 @@ fileprivate func reduceInternalIntent(
 
         case .failure(let error):
             newState.requirement = .errorHandling
-            newState.errorMessage = error.readableMessage
+            newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("login_failed \(error.readableMessage)", level: .error),
-                .toast(error.readableMessage)
+                .logEvent("login_failed \(error.userMessage)", level: .error),
+                .toast(error.userMessage)
             ])
         }
     case .signupResponse(let result):
@@ -212,10 +212,10 @@ fileprivate func reduceInternalIntent(
 
         case .failure(let error):
             newState.requirement = .errorHandling
-            newState.errorMessage = error.readableMessage
+            newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("signup_failed \(error.readableMessage)", level: .error),
-                .toast(error.readableMessage)
+                .logEvent("signup_failed \(error.userMessage)", level: .error),
+                .toast(error.userMessage)
             ])
         }
 
@@ -230,10 +230,10 @@ fileprivate func reduceInternalIntent(
             ])
 
         case .failure(let error):
-            newState.errorMessage = error.readableMessage
+            newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("otp_verfication_failed \(error.readableMessage)", level: .error),
-                .toast(error.readableMessage),
+                .logEvent("otp_verfication_failed \(error.userMessage)", level: .error),
+                .toast(error.userMessage),
             ])
         }
     }

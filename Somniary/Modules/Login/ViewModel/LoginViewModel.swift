@@ -235,14 +235,14 @@ extension LoginViewModel {
     func handleAppleSignInCompletion(_ result: Result<ASAuthorization, Error>) {
         guard let nonce = self.state.appleNonce else {
            // Nonce가 없으면 에러로 처리
-           let error = AppleLoginError.missingNonce
+            let error = AppleLoginError.missingNonce()
            self.send(.systemExtenral(.appleLoginCompleted(.failure(error))))
            return
        }
 
         // ViewModel 내부에서 도메인 타입으로 변환
         let domainResult = result
-            .mapError(AppleLoginError.init)
+            .mapError { AppleLoginError.from($0) }
             .flatMap { authorization in
                 AppleSignInMapper.toCredential(authorization, expectedNonce: nonce)
             }
