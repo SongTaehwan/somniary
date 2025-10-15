@@ -10,6 +10,7 @@ import Alamofire
 
 enum AuthEndpoint: SomniaryEndpoint {
 
+    case authenticateWithApple(creadential: AppleCredential)
     case requestOtpCode(email: String, createUser: Bool)
     case verify(email: String, otpCode: String)
     case refreshToken(refreshToken: String)
@@ -27,6 +28,8 @@ extension AuthEndpoint {
             return "/auth/v1/token"
         case .logout:
             return "/auth/v1/logout"
+        case .authenticateWithApple:
+            return "/auth/v1/token"
         }
     }
 
@@ -36,6 +39,8 @@ extension AuthEndpoint {
         switch self {
         case .logout:
             return [URLQueryItem(name: "scope", value: "local")]
+        case .authenticateWithApple:
+            return [URLQueryItem(name: "grant_type", value: "id_token")]
         default:
             return nil
         }
@@ -65,9 +70,19 @@ extension AuthEndpoint {
                 data: ["refresh_token": token],
                 encoder: JSONEncoding.default
             )
-
         case .logout:
             return .plain
+
+        case let .authenticateWithApple(credential):
+            return .jsonObject(
+                data: [
+                    "id_token": credential.identityToken,
+                    "provider": "apple",
+                    "nonce": credential.nonce
+                ],
+                encoder: JSONEncoding.default
+            )
         }
+
     }
 }

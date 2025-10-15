@@ -11,4 +11,5 @@ import Foundation
 struct LoginEnvironment {
     let auth: AuthReposable
     let reducerEnvironment: LoginReducerEnvironment
+    let crypto: CryptoProviding
 }

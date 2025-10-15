@@ -77,10 +77,6 @@ fileprivate func reduceUserIntent(
             .requestSignupCode(email: newState.email, requestId: requestId),
         ])
 
-    case .appleSignInTapped:
-        // TODO: SDK 연동
-        return (newState, [.logEvent("apple_signin_implementation_required")])
-
     case .googleSignInTapped:
         // TODO: SDK 연동
         return (newState, [.logEvent("google_signin_implementation_required")])
@@ -137,15 +133,46 @@ fileprivate func reduceUserIntent(
 
 fileprivate func reduceExternalIntent(
     state: LoginViewModel.LoginState,
-    intent: LoginIntent.ExtenralIntent,
+    intent: LoginIntent.SystemExtenralIntent,
     env: LoginReducerEnvironment
 ) -> (LoginViewModel.LoginState, [LoginEffectPlan]) {
-    return (state, [])
+    var newState = state
+
+    switch intent {
+    case .appleLoginRequest:
+        newState.isLoading = true
+
+        return (newState, [
+            .logEvent("request_apple_login", level: .info)
+        ])
+    case .appleLoginCompleted(.success(let credential)):
+        let requestId = newState.latestRequestId ?? env.makeRequestId()
+
+        return (newState, [
+            .logEvent("handle_apple_login_result", level: .debug),
+            .authenticateWithApple(
+                credential: credential,
+                requestId: requestId
+            )
+        ])
+    case .appleLoginCompleted(.failure(let error)):
+        newState.isLoading = false
+        newState.errorMessage = error.userMessage
+
+        return (newState, [
+            .toast(error.userMessage),
+            .logEvent("failed_apple_login: \(error.userMessage)", level: .error)
+        ])
+    default:
+        return (state, [
+            .logEvent("unhandled_system_intent: \(String(describing: intent))", level: .error)
+        ])
+    }
 }
 
 fileprivate func reduceInternalIntent(
     state: LoginViewModel.LoginState,
-    intent: LoginIntent.InternalIntent,
+    intent: LoginIntent.SystemInternalIntent,
     env: LoginReducerEnvironment
 ) -> (LoginViewModel.LoginState, [LoginEffectPlan]) {
     var newState = state
@@ -166,10 +193,10 @@ fileprivate func reduceInternalIntent(
 
         case .failure(let error):
             newState.requirement = .errorHandling
-            newState.errorMessage = error.readableMessage
+            newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("login_failed \(error.readableMessage)", level: .error),
-                .toast(error.readableMessage)
+                .logEvent("login_failed \(error.userMessage)", level: .error),
+                .toast(error.userMessage)
             ])
         }
     case .signupResponse(let result):
@@ -185,10 +212,10 @@ fileprivate func reduceInternalIntent(
 
         case .failure(let error):
             newState.requirement = .errorHandling
-            newState.errorMessage = error.readableMessage
+            newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("signup_failed \(error.readableMessage)", level: .error),
-                .toast(error.readableMessage)
+                .logEvent("signup_failed \(error.userMessage)", level: .error),
+                .toast(error.userMessage)
             ])
         }
 
@@ -203,10 +230,10 @@ fileprivate func reduceInternalIntent(
             ])
 
         case .failure(let error):
-            newState.errorMessage = error.readableMessage
+            newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("otp_verfication_failed \(error.readableMessage)", level: .error),
-                .toast(error.readableMessage),
+                .logEvent("otp_verfication_failed \(error.userMessage)", level: .error),
+                .toast(error.userMessage),
             ])
         }
     }

@@ -11,14 +11,14 @@ extension NetAuth {
 
     enum Verify {
         struct Response: Decodable {
-            let acessToken: String
+            let accessToken: String
             let refreshToken: String
             let tokenType: String
             let expiredIn: Int
             let expiresAt: Int
 
             enum CodingKeys: String, CodingKey {
-                case acessToken = "access_token"
+                case accessToken = "access_token"
                 case refreshToken = "refresh_token"
                 case tokenType = "token_type"
                 case expiredIn = "expires_in"

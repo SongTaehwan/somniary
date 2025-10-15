@@ -16,6 +16,9 @@ struct LoginEffectPlan: Equatable {
         case requestSignupCode(email: String, requestId: UUID)
         case verify(email: String, otpCode: String, requestId: UUID)
 
+        /// SDK
+        case authenticateWithApple(credential: AppleCredential, requestId: UUID)
+
         /// side effect
         case logEvent(String)
         case storeToken(TokenEntity)
@@ -143,5 +146,21 @@ extension LoginEffectPlan {
 
     static func storeToken(_ token: TokenEntity) -> Self {
         return .make(.storeToken(token))
+    }
+
+    static func authenticateWithApple(
+        credential: AppleCredential,
+        requestId: UUID,
+        retry: Int = 0,
+        timeout: Int = 10000
+    ) -> Self {
+        return .make(
+            .authenticateWithApple(
+                credential: credential,
+                requestId: requestId
+            ),
+            retry: retry,
+            timeout: timeout
+        )
     }
 }
