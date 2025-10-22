@@ -7,23 +7,9 @@
 
 import Foundation
 
-struct ErrorOrigin: Equatable {
-    let file: String
-    let function: String
-    let line: Int
-
-    var fileName: String {
-        (file as NSString).lastPathComponent
-    }
-
-    var description: String {
-        "Origin: \(fileName):\(line) Caller: \(function)"
-    }
-}
-
 protocol ErrorContext {
     /// 원본 에러
-    var errorSnaphot: ErrorSnapshot? { get }
+    var errorSnapshot: ErrorSnapshot? { get }
 
     /// 에러 발생 지점
     var errorOrigin: ErrorOrigin { get }

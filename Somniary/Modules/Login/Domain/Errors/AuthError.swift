@@ -53,7 +53,7 @@ struct AuthErrorContext: ErrorContext, Equatable {
     let statusCode: Int?
 
     // protocol
-    let errorSnaphot: ErrorSnapshot?
+    let errorSnapshot: ErrorSnapshot?
     let errorOrigin: ErrorOrigin
 
     var metadata: [String : String] {
@@ -68,7 +68,7 @@ struct AuthErrorContext: ErrorContext, Equatable {
         provider: AuthProvider? = nil,
         idempotencyKey: String? = nil,
         statusCode: Int? = nil,
-        errorSnaphot: ErrorSnapshot? = nil,
+        errorSnapshot: ErrorSnapshot? = nil,
         file: String = #file,
         function: String = #function,
         line: Int = #line
@@ -76,7 +76,7 @@ struct AuthErrorContext: ErrorContext, Equatable {
         self.provider = provider
         self.idempotencyKey = idempotencyKey
         self.statusCode = statusCode
-        self.errorSnaphot = errorSnaphot
+        self.errorSnapshot = errorSnapshot
         self.errorOrigin = ErrorOrigin(
             file: file,
             function: function,
@@ -105,7 +105,7 @@ extension AuthError {
         return AuthError(
             category: .unknown,
             context: .init(
-                errorSnaphot: snapshot,
+                errorSnapshot: snapshot,
                 file: file,
                 function: function,
                 line: line

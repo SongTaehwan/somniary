@@ -11,8 +11,6 @@ import AuthenticationServices
 
 // TODO: 로그인 422 에러 처리
 // TODO: Loading indicator 정책 정의
-// TODO: 사용자 노출 에러, 내부 에러 설계
-// TODO: nonce 기능적 1차 완성
 final class LoginViewModel: ViewModelType {
 
     typealias LoginExecutor = any EffectExecuting<LoginEffectPlan, LoginIntent>

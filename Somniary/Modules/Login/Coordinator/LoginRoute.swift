@@ -7,7 +7,6 @@
 
 import Foundation
 
-// TODO: Login, Signup 플로우 분리할지?
 enum LoginRoute: Routable {
     /// 로그인 화면
     case main
