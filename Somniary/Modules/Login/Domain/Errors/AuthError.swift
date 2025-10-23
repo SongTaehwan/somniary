@@ -58,9 +58,9 @@ struct AuthErrorContext: ErrorContext, Equatable {
 
     var metadata: [String : String] {
         return [
-            "provider": provider?.rawValue ?? "",
-            "idempotency_key": idempotencyKey ?? "",
-            "status_code": statusCode.map(String.init) ?? ""
+            "provider": provider?.rawValue ?? "nil",
+            "idempotency_key": idempotencyKey ?? "nil",
+            "status_code": statusCode.map(String.init) ?? "nil"
         ]
     }
 
