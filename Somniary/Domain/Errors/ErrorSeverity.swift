@@ -13,4 +13,19 @@ enum ErrorSeverity: String, Equatable {
     case warning
     case error
     case critical
+
+    var icon: String {
+        switch self {
+        case .debug:
+            return "🐛"
+        case .info:
+            return "ℹ️"
+        case .warning:
+            return "⚠️"
+        case .error:
+            return "💥"
+        case .critical:
+            return "💀"
+        }
+    }
 }

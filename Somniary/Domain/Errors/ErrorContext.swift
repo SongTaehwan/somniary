@@ -9,7 +9,7 @@ import Foundation
 
 protocol ErrorContext {
     /// 원본 에러
-    var errorSnapshot: ErrorSnapshot? { get }
+    var errorSnapshot: ErrorSnapshot { get }
 
     /// 에러 발생 지점
     var errorOrigin: ErrorOrigin { get }

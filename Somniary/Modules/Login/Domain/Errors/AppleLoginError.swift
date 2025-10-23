@@ -64,11 +64,11 @@ enum AppleLoginErrorDescriptor: String, ErrorDescriptor {
 
 struct AppleLoginErrorContext: ErrorContext, Equatable {
 
-    let errorSnapshot: ErrorSnapshot?
+    let errorSnapshot: ErrorSnapshot
     let errorOrigin: ErrorOrigin
 
     init(
-        errorSnapshot: ErrorSnapshot? = nil,
+        errorSnapshot: ErrorSnapshot = .unknown,
         file: String = #file,
         function: String = #function,
         line: Int = #line
@@ -103,7 +103,7 @@ extension AppleLoginError {
     }
 
     static func invalidResponse(
-        snapshot: ErrorSnapshot? = nil,
+        snapshot: ErrorSnapshot = .unknown,
         file: String = #file,
         function: String = #function,
         line: Int = #line
@@ -120,7 +120,7 @@ extension AppleLoginError {
     }
 
     static func missingNonce(
-        snapshot: ErrorSnapshot? = nil,
+        snapshot: ErrorSnapshot = .unknown,
         file: String = #file,
         function: String = #function,
         line: Int = #line

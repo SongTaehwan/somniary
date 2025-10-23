@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum DomainType: String {
-    case auth
-    case diary
-    case profile
-    case network
-}
-
 protocol ErrorDescriptor: RawRepresentable where RawValue == String {
     /// 사용자 메시지
     var userMessage: String { get }
@@ -27,7 +20,7 @@ protocol ErrorDescriptor: RawRepresentable where RawValue == String {
 
 extension ErrorDescriptor {
     func toErrorInfo<Context: ErrorContext>(context: Context) -> ErrorInfo {
-        let errorMessage = context.errorSnapshot?.message
+        let errorMessage = context.errorSnapshot.message
 
         return ErrorInfo(
             domain: domain.rawValue,

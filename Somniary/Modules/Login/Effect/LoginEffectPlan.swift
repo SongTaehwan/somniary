@@ -140,6 +140,18 @@ extension LoginEffectPlan {
         return .make(.logEvent(log))
     }
 
+    static func logEvent(message: String = "Error Logging Event", errorMessage: String) -> Self {
+        let log =
+        """
+        --------------------------------------
+        [\(LogLevel.error.rawValue)] \(message)
+        \(errorMessage)
+        --------------------------------------
+        """
+
+        return .make(.logEvent(log))
+    }
+
     static func updateTextField(email: String? = nil, otpCode: String? = nil) -> Self {
         return .make(.updateTextField(email: email, otpCode: otpCode))
     }

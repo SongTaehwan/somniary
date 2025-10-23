@@ -53,14 +53,14 @@ struct AuthErrorContext: ErrorContext, Equatable {
     let statusCode: Int?
 
     // protocol
-    let errorSnapshot: ErrorSnapshot?
+    let errorSnapshot: ErrorSnapshot
     let errorOrigin: ErrorOrigin
 
     var metadata: [String : String] {
         return [
-            "provider": provider?.rawValue ?? "",
-            "idempotency_key": idempotencyKey ?? "",
-            "status_code": statusCode.map(String.init) ?? ""
+            "provider": provider?.rawValue ?? "nil",
+            "idempotency_key": idempotencyKey ?? "nil",
+            "status_code": statusCode.map(String.init) ?? "nil"
         ]
     }
 
@@ -68,7 +68,7 @@ struct AuthErrorContext: ErrorContext, Equatable {
         provider: AuthProvider? = nil,
         idempotencyKey: String? = nil,
         statusCode: Int? = nil,
-        errorSnapshot: ErrorSnapshot? = nil,
+        errorSnapshot: ErrorSnapshot = .unknown,
         file: String = #file,
         function: String = #function,
         line: Int = #line
@@ -97,7 +97,7 @@ typealias AuthError = SomniaryError<AuthErrorDescriptor, AuthErrorContext>
 
 extension AuthError {
     static func unknown(
-        snapshot: ErrorSnapshot? = nil,
+        snapshot: ErrorSnapshot = .unknown,
         file: String = #file,
         function: String = #function,
         line: Int = #line

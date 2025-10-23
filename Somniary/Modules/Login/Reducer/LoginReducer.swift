@@ -161,7 +161,7 @@ fileprivate func reduceExternalIntent(
 
         return (newState, [
             .toast(error.userMessage),
-            .logEvent("failed_apple_login: \(error.userMessage)", level: .error)
+            .logEvent(message: "failed_apple_login", errorMessage: error.log)
         ])
     default:
         return (state, [
@@ -195,7 +195,7 @@ fileprivate func reduceInternalIntent(
             newState.requirement = .errorHandling
             newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("login_failed \(error.userMessage)", level: .error),
+                .logEvent(message: "login_failed", errorMessage: error.log),
                 .toast(error.userMessage)
             ])
         }
@@ -214,7 +214,7 @@ fileprivate func reduceInternalIntent(
             newState.requirement = .errorHandling
             newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("signup_failed \(error.userMessage)", level: .error),
+                .logEvent(message: "signup_failed", errorMessage: error.log),
                 .toast(error.userMessage)
             ])
         }
@@ -232,7 +232,7 @@ fileprivate func reduceInternalIntent(
         case .failure(let error):
             newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent("otp_verfication_failed \(error.userMessage)", level: .error),
+                .logEvent(message: "otp_verfication_failed", errorMessage: error.log),
                 .toast(error.userMessage),
             ])
         }

@@ -15,8 +15,4 @@ struct ErrorOrigin: Equatable {
     var fileName: String {
         (file as NSString).lastPathComponent
     }
-
-    var description: String {
-        "Origin: \(fileName):\(line) Caller: \(function)"
-    }
 }
