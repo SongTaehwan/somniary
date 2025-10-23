@@ -27,7 +27,7 @@ protocol ErrorDescriptor: RawRepresentable where RawValue == String {
 
 extension ErrorDescriptor {
     func toErrorInfo<Context: ErrorContext>(context: Context) -> ErrorInfo {
-        let errorMessage = context.errorSnapshot?.message
+        let errorMessage = context.errorSnapshot.message
 
         return ErrorInfo(
             domain: domain.rawValue,
