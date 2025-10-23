@@ -9,6 +9,7 @@ import Foundation
 
 /// 에러 정보의 구조화된 표현 형식
 /// 로깅, 모니터링, 분석, 알림 등 다양한 용도로 사용
+// TODO: 외부 모니터링 시스템 연동
 struct ErrorInfo: Equatable {
     /// 에러가 발생한 도메인 (auth, diary, profile 등)
     let domain: String
