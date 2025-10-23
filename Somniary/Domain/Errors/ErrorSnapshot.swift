@@ -35,4 +35,14 @@ struct ErrorSnapshot: Equatable {
             self.code = (error as NSError).code != 0 ? String((error as NSError).code) : nil
         }
     }
+
+    init(typeName: String, message: String, code: String? = nil) {
+        self.typeName = typeName
+        self.message = message
+        self.code = code
+    }
+}
+
+extension ErrorSnapshot {
+    static let unknown = ErrorSnapshot(typeName: "unknown", message: "unknown", code: nil)
 }
