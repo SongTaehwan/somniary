@@ -77,7 +77,7 @@ struct LoginView: View {
         .onReceive(viewModel.uiEvent) { event in
             switch event {
             case .toast(let message):
-                print(message)
+                print("[toast] \(message)")
             }
         }
     }

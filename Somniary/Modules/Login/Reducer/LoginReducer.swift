@@ -161,7 +161,7 @@ fileprivate func reduceExternalIntent(
 
         return (newState, [
             .toast(error.userMessage),
-            .logEvent("failed_apple_login: \(error.userMessage)", level: .error)
+            .logEvent(message: "failed_apple_login", errorMessage: error.log)
         ])
     default:
         return (state, [
