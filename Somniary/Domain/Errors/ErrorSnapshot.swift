@@ -22,18 +22,7 @@ struct ErrorSnapshot: Equatable {
 
         self.typeName = String(describing: type(of: error))
         self.message = error.localizedDescription
-
-        // NetworkError 같은 특정 타입 처리
-        if let networkError = error as? NetworkError {
-            switch networkError {
-            case .httpError(let code), .serverError(let code):
-                self.code = String(code)
-            default:
-                self.code = nil
-            }
-        } else {
-            self.code = (error as NSError).code != 0 ? String((error as NSError).code) : nil
-        }
+        self.code = (error as NSError).code != 0 ? String((error as NSError).code) : nil
     }
 
     init(typeName: String, message: String, code: String? = nil) {
