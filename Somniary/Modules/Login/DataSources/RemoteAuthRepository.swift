@@ -18,17 +18,41 @@ struct RemoteAuthRepository: AuthReposable {
     }
 
     func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async throws -> VoidResponse {
-        let result = try await client.request(.requestOtpCode(email: email, createUser: createUser), type: VoidResponse.self)
-        return result
+        let result = await client.request(.requestOtpCode(email: email, createUser: createUser))
+
+        switch result {
+        case .success(let response):
+            return try JSONDecoder().decode(VoidResponse.self, from: response.body)
+        case .failure(let error):
+            throw mapToDomainError(error)
+        }
     }
 
     func verify(email: String, otpCode: String, idempotencyKey: String?) async throws -> TokenEntity {
-        let result = try await client.request(.verify(email: email, otpCode: otpCode), type: NetAuth.Verify.Response.self)
-        return TokenEntity(accessToken: result.accessToken, refreshToken: result.refreshToken)
+        let result = await client.request(.verify(email: email, otpCode: otpCode))
+
+        switch result {
+        case .success(let response):
+            let data = try JSONDecoder().decode(NetAuth.Verify.Response.self, from: response.body)
+            return TokenEntity(accessToken: data.accessToken, refreshToken: data.refreshToken)
+        case .failure(let error):
+            throw mapToDomainError(error)
+        }
     }
 
     func verify(credential: AppleCredential, idempotencyKey: String?) async throws -> TokenEntity {
-        let result = try await client.request(.authenticateWithApple(creadential: credential), type: NetAuth.Verify.Response.self)
-        return TokenEntity(accessToken: result.accessToken, refreshToken: result.refreshToken)
+        let result = await client.request(.authenticateWithApple(creadential: credential))
+
+        switch result {
+        case .success(let response):
+            let data = try JSONDecoder().decode(NetAuth.Verify.Response.self, from: response.body)
+            return TokenEntity(accessToken: data.accessToken, refreshToken: data.refreshToken)
+        case .failure(let error):
+            throw mapToDomainError(error)
+        }
+    }
+
+    private func mapToDomainError(_ error: Error) -> DomainError {
+        fatalError("not implemented")
     }
 }
