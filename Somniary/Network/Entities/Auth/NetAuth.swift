@@ -8,4 +8,6 @@
 import Foundation
 
 /// 네임스페이스
-enum NetAuth {}
+enum NetAuth {
+    struct VoidResponse: Equatable, Decodable {}
+}
