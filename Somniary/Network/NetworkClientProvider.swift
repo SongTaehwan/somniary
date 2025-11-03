@@ -9,14 +9,14 @@ import Foundation
 
 final class NetworkClientProvider {
     
-    static func getNetworkClient<Target: SomniaryEndpoint>() -> SomniaryNetworkClient<Target> {
-        return SomniaryNetworkClient()
+    static func getNetworkClient<Target: SomniaryEndpoint>() -> SomniaryHTTPClient<Target> {
+        return SomniaryHTTPClient()
     }
 }
 
 extension NetworkClientProvider {
 
-    static let userNetworkClient = SomniaryNetworkClient<UserEndpoint>()
-    static let diaryNetworkClient = SomniaryNetworkClient<DiaryEndpoint>()
-    static let authNetworkClient = SomniaryNetworkClient<AuthEndpoint>()
+    static let userNetworkClient = SomniaryHTTPClient<UserEndpoint>()
+    static let diaryNetworkClient = SomniaryHTTPClient<DiaryEndpoint>()
+    static let authNetworkClient = SomniaryHTTPClient<AuthEndpoint>()
 }
