@@ -8,6 +8,8 @@
 import Foundation
 
 protocol TokenReposable {
+    associatedtype TokenEntity
+
     func getAccessToken() -> String?
     func getRefreshToken() -> String?
     func updateToken(_ token: TokenEntity) throws

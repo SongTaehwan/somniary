@@ -1,5 +1,5 @@
 //
-//  Singleton.swift
+//  TokenRepository+Extensions.swift
 //  Somniary
 //
 //  Created by 송태환 on 9/17/25.

@@ -10,3 +10,9 @@ import Foundation
 protocol AnyOptional {
     var isNil: Bool { get }
 }
+
+extension Optional: AnyOptional {
+    var isNil: Bool {
+        return self == nil
+    }
+}

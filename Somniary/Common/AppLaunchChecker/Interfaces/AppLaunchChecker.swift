@@ -7,10 +7,6 @@
 
 import Foundation
 
-protocol AppLaunchChecking {
-    var isFirstLaunch: Bool { get }
-}
-
 struct AppLaunchChecker: AppLaunchChecking {
     
     static let shared = AppLaunchChecker()
