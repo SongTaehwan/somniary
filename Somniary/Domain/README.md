@@ -22,6 +22,7 @@ Domain/
 ├── Entities/          # 비즈니스 엔티티 (도메인 모델)
 ├── UseCases/         # 비즈니스 유스케이스 (인터페이스)
 ├── Models/           # UseCase Input/Output 모델
+├── Utils/            # Domain 전용 유틸리티
 └── Errors/           # 도메인 에러 타입 및 에러 처리
 ```
 
@@ -210,6 +211,70 @@ protocol UpdateDiaryUseCase {
 - UseCase별로 필요한 데이터만 노출 (최소 권한 원칙)
 - 레이어 간 경계를 명확히 하여 결합도 감소
 
+#### Utils
+
+- Domain 레이어에서만 사용되는 유틸리티 함수 및 확장
+- 비즈니스 로직을 지원하는 헬퍼 함수
+- DomainError 등 Domain 타입에 의존 가능
+
+**포함 대상:**
+
+- 비즈니스 규칙 검증 함수
+- Domain 타입(DomainError, Entity 등)의 확장
+- 복잡한 비즈니스 로직을 지원하는 헬퍼 함수
+- Domain Entity 컬렉션에 대한 유틸리티
+
+**제외 대상:**
+
+- 순수 Foundation 확장 (→ Foundation 레이어)
+- Presentation 지원 코드 (→ Helpers)
+- 독립 재사용 모듈 (→ Common)
+
+**작성 예시:**
+
+```swift
+// Domain/Utils/Result+Domain.swift
+extension Result where Failure == DomainError {
+    /// Repository 호출 시 에러 매핑
+    static func fromRepository<T>(
+        _ body: () async throws -> T
+    ) async -> Result<T, DomainError> where Success == T {
+        do {
+            return .success(try await body())
+        } catch let error as DomainError {
+            return .failure(error)
+        } catch {
+            return .failure(DomainError.unknown(error))
+        }
+    }
+}
+
+// Domain/Utils/Collection+Domain.swift
+extension Collection where Element: Entity {
+    /// 비즈니스 규칙: 활성 상태인 엔티티만 필터링
+    func onlyActive() -> [Element] {
+        filter { $0.isActive }
+    }
+}
+
+// Domain/Utils/DomainHelpers.swift
+enum DomainValidation {
+    /// 비즈니스 규칙: 날짜 범위 검증
+    static func validateDateRange(
+        _ start: Date,
+        _ end: Date
+    ) -> Result<Void, DomainError> {
+        guard start < end else {
+            return .failure(DomainError.invalidDateRange)
+        }
+        guard end <= Date() else {
+            return .failure(DomainError.futureDate)
+        }
+        return .success(())
+    }
+}
+```
+
 #### Errors
 
 - 도메인 에러 타입 정의 (`DomainError` 프로토콜)
@@ -246,6 +311,13 @@ protocol UpdateDiaryUseCase {
 - [ ] 단일 비즈니스 작업만 수행하는가?
 - [ ] Input/Output 모델을 통해 경계가 명확한가?
 - [ ] Repository 인터페이스를 통해 데이터에 접근하는가?
+
+**Utils 추가 시:**
+
+- [ ] Domain 레이어에서만 사용되는가?
+- [ ] 비즈니스 로직을 지원하는가?
+- [ ] Domain 타입(DomainError, Entity 등)에 의존하는가?
+- [ ] 순수 Foundation 확장이 아닌가? (순수 확장은 Foundation 레이어)
 
 **공통:**
 
