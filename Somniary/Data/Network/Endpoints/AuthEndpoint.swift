@@ -8,10 +8,10 @@
 import Foundation
 
 enum AuthEndpoint: SomniaryEndpoint {
-    case authenticateWithApple(creadential: AppleCredential)
-    case requestOtpCode(email: String, createUser: Bool)
-    case verify(email: String, otpCode: String)
-    case refreshToken(refreshToken: String)
+    case authenticateWithApple(payload: NetAuth.Apple.Request)
+    case requestOtpCode(payload: NetAuth.OTP.Request)
+    case verify(payload: NetAuth.Email.Request)
+    case refreshToken(payload: NetAuth.RefreshToken.Request)
     case logout
 }
 
@@ -46,37 +46,16 @@ extension AuthEndpoint {
 
     var payload: RequestDataType? {
         switch self {
-        case .verify(email: let email, otpCode: let otpCode):
-            return .jsonObject(
-                data: [
-                    "email": email,
-                    "token": otpCode,
-                    "type": "email"
-                ],
-            )
-        case .requestOtpCode(email: let email, let createUser):
-            return .jsonObject(
-                data: [
-                    "email": email,
-                    "create_user": createUser
-                ],
-            )
-        case .refreshToken(refreshToken: let token):
-            return .jsonObject(
-                data: ["refresh_token": token],
-            )
+        case .verify(let payload):
+            return .entity(data: payload)
+        case .requestOtpCode(let payload):
+            return .entity(data: payload)
+        case .refreshToken(let payload):
+            return .entity(data: payload)
+        case .authenticateWithApple(let payload):
+            return .entity(data: payload)
         case .logout:
             return .plain
-
-        case let .authenticateWithApple(credential):
-            return .jsonObject(
-                data: [
-                    "id_token": credential.identityToken,
-                    "provider": "apple",
-                    "nonce": credential.nonce
-                ],
-            )
         }
-
     }
 }

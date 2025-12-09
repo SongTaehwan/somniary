@@ -1,5 +1,5 @@
 //
-//  RemoteAuthDataSource.swift
+//  DefaultRemoteAuthDataSource.swift
 //  Somniary
 //
 //  Created by 송태환 on 10/25/25.
@@ -23,7 +23,7 @@ enum AuthDataSourceError: Error, Equatable {
 /// 책임: 네트워크 프로토콜 해석
 /// 1. Decoding/Encoding
 /// 2. 전송 계층 에러를 data source 에러로 매핑
-struct RemoteAuthDataSource: AuthDataSource {
+struct DefaultRemoteAuthDataSource: RemoteAuthDataSource {
     private let client: any HTTPNetworking<AuthEndpoint>
     private let decorder: JSONDecoder
 
@@ -32,13 +32,13 @@ struct RemoteAuthDataSource: AuthDataSource {
         self.decorder = decorder
     }
 
-    func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async throws -> NetAuth.VoidResponse {
-        let result = await client.request(.requestOtpCode(email: email, createUser: createUser))
+    func requestOtpCode(payload: NetAuth.OTP.Request, idempotencyKey: String?) async throws -> NetCommon.Void {
+        let result = await client.request(.requestOtpCode(payload: payload))
 
         switch result {
         case .success(let response):
-            let decodingResult = Result<NetAuth.VoidResponse, AuthDataSourceError>.catching {
-                try decorder.decode(NetAuth.VoidResponse.self, from: response.body!)
+            let decodingResult = Result<NetCommon.Void, AuthDataSourceError>.catching {
+                try decorder.decode(NetCommon.Void.self, from: response.body!)
             } mapError: { error in
                 return .badSchema
             }
@@ -53,16 +53,16 @@ struct RemoteAuthDataSource: AuthDataSource {
         }
     }
 
-    func verify(email: String, otpCode: String, idempotencyKey: String?) async throws -> NetAuth.Verify.Response {
-        let result = await client.request(.verify(email: email, otpCode: otpCode))
+    func verify(payload: NetAuth.Email.Request, idempotencyKey: String?) async throws -> NetAuth.Email.Response {
+        let result = await client.request(.verify(payload: payload))
             .mapError { self.mapToDataSourceError($0) }
 
         // TODO: Data Source 개발 및 DataSource Error 정의
         // Endpoint 쪽 Request Model 고민해볼 것
         switch result {
         case .success(let response):
-            let decodingResult = Result<NetAuth.Verify.Response, AuthDataSourceError>.catching {
-                try decorder.decode(NetAuth.Verify.Response.self, from: response.body!)
+            let decodingResult = Result<NetAuth.Email.Response, AuthDataSourceError>.catching {
+                try decorder.decode(NetAuth.Email.Response.self, from: response.body!)
             } mapError: { error in
                 return .badSchema
             }
@@ -77,13 +77,13 @@ struct RemoteAuthDataSource: AuthDataSource {
         }
     }
 
-    func verify(credential: AppleCredential, idempotencyKey: String?) async throws -> NetAuth.Verify.Response {
-        let result = await client.request(.authenticateWithApple(creadential: credential))
+    func verify(payload: NetAuth.Apple.Request, idempotencyKey: String?) async throws -> NetAuth.Apple.Response {
+        let result = await client.request(.authenticateWithApple(payload: payload))
 
         switch result {
         case .success(let response):
-            let decodingResult = Result<NetAuth.Verify.Response, AuthDataSourceError>.catching {
-                try decorder.decode(NetAuth.Verify.Response.self, from: response.body!)
+            let decodingResult = Result<NetAuth.Email.Response, AuthDataSourceError>.catching {
+                try decorder.decode(NetAuth.Email.Response.self, from: response.body!)
             } mapError: { error in
                 return .badSchema
             }

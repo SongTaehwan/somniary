@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: Environment
 struct LoginEnvironment {
-    let auth: AuthReposable
+    let auth: AuthRepository
     let reducerEnvironment: LoginReducerEnvironment
     let crypto: CryptoProviding
 }

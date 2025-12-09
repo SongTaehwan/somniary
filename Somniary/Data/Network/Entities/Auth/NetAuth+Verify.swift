@@ -8,8 +8,13 @@
 import Foundation
 
 extension NetAuth {
-
-    enum Verify {
+    enum Email {
+        struct Request: Encodable {
+            let email: String
+            let token: String
+            let type: String = "email"
+        }
+        
         struct Response: Decodable {
             let accessToken: String
             let refreshToken: String
