@@ -41,6 +41,9 @@ enum RemoteDataSourceError: Error, Equatable {
 
     case securityError
 
-    /// 발생하면 안돼는 예외 케이스
+    /// 예상 못한 케이스
     case unknown
+
+    /// 발생하지 않을 케이스
+    case unexpected
 }
