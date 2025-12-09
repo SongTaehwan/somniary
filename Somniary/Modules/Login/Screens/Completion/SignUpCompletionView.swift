@@ -40,7 +40,7 @@ struct SignUpCompletionView: View {
 }
 
 #Preview {
-    let authRepository = RemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)
+    let authRepository = DefaultRemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)
     let environment = LoginEnvironment(
         auth: authRepository,
         reducerEnvironment: LoginReducerEnvironment { UUID() },

@@ -12,7 +12,7 @@ import Foundation
 ///
 /// 1. DTO 를 Domain 객체로 매핑
 /// 2. Data source error 를 Domain error 로 매핑
-struct RemoteAuthRepository: AuthRepository {
+struct DefaultRemoteAuthRepository: RemoteAuthRepository {
     private let client: any HTTPNetworking<AuthEndpoint>
 
     init(client: any HTTPNetworking<AuthEndpoint>) {

@@ -12,10 +12,10 @@ final class LoginExecutor: EffectExecuting {
     typealias Intent = LoginIntent
 
     private var tasks: [UUID: Task<Void, Never>] = [:]
-    private let authRepository: AuthRepository
+    private let authRepository: RemoteAuthRepository
     private let tokenRepository: any TokenReposable<TokenEntity>
 
-    init(dataSource: AuthRepository, tokenRepository: any TokenReposable<TokenEntity>) {
+    init(dataSource: RemoteAuthRepository, tokenRepository: any TokenReposable<TokenEntity>) {
         self.authRepository = dataSource
         self.tokenRepository = tokenRepository
     }
