@@ -35,11 +35,9 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
             return .failure(Self.mapToTransportError(error))
         }
 
-        let response = dataResponse.result
-
         // 응답 처리
         guard let httpResponse = dataResponse.response, let url = dataResponse.request?.url else {
-//            DebugAssert.fail(category: .network, "네트워크 통신은 성공했지만 URL 정보나 HTTPResponse 정보가 없습니다.")
+            DebugAssert.fail(category: .network, "네트워크 통신은 성공했지만 URL 정보나 HTTPResponse 정보가 없습니다.")
             return .failure(TransportError.unknown)
         }
 
@@ -55,7 +53,7 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
             #if DEBUG
             print("🚨 ERROR: unexpected network error occured")
             #endif
-//            DebugAssert.fail(category: .network, "네트워크 에러 정보가 없습니다.")
+            DebugAssert.fail(category: .network, "네트워크 에러 정보가 없습니다.")
             return .unknown
         }
 
