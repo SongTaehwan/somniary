@@ -11,9 +11,9 @@ import Foundation
 // TODO: API 별로 Infra Error 객체를 Domain Error 객체로 매핑
 struct RemoteAuthRepository: AuthReposable {
 
-    private let client: any SomniaryNetworking<AuthEndpoint>
+    private let client: any HTTPNetworking<AuthEndpoint>
 
-    init(client: any SomniaryNetworking<AuthEndpoint>) {
+    init(client: any HTTPNetworking<AuthEndpoint>) {
         self.client = client
     }
 
@@ -22,7 +22,7 @@ struct RemoteAuthRepository: AuthReposable {
 
         switch result {
         case .success(let response):
-            return try JSONDecoder().decode(VoidResponse.self, from: response.body)
+            return try JSONDecoder().decode(VoidResponse.self, from: response.body!)
         case .failure(let error):
             throw mapToDomainError(error)
         }
@@ -33,7 +33,7 @@ struct RemoteAuthRepository: AuthReposable {
 
         switch result {
         case .success(let response):
-            let data = try JSONDecoder().decode(NetAuth.Verify.Response.self, from: response.body)
+            let data = try JSONDecoder().decode(NetAuth.Verify.Response.self, from: response.body!)
             return TokenEntity(accessToken: data.accessToken, refreshToken: data.refreshToken)
         case .failure(let error):
             throw mapToDomainError(error)
@@ -45,7 +45,7 @@ struct RemoteAuthRepository: AuthReposable {
 
         switch result {
         case .success(let response):
-            let data = try JSONDecoder().decode(NetAuth.Verify.Response.self, from: response.body)
+            let data = try JSONDecoder().decode(NetAuth.Verify.Response.self, from: response.body!)
             return TokenEntity(accessToken: data.accessToken, refreshToken: data.refreshToken)
         case .failure(let error):
             throw mapToDomainError(error)

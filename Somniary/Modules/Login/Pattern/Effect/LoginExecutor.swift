@@ -13,9 +13,9 @@ final class LoginExecutor: EffectExecuting {
 
     private var tasks: [UUID: Task<Void, Never>] = [:]
     private let authRepository: AuthReposable
-    private let tokenRepository: TokenReposable
+    private let tokenRepository: any TokenReposable<TokenEntity>
 
-    init(dataSource: AuthReposable, tokenRepository: TokenReposable) {
+    init(dataSource: AuthReposable, tokenRepository: any TokenReposable<TokenEntity>) {
         self.authRepository = dataSource
         self.tokenRepository = tokenRepository
     }

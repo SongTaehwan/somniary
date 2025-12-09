@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import Alamofire
 
 enum AuthEndpoint: SomniaryEndpoint {
-
     case authenticateWithApple(creadential: AppleCredential)
     case requestOtpCode(email: String, createUser: Bool)
     case verify(email: String, otpCode: String)
@@ -55,7 +53,6 @@ extension AuthEndpoint {
                     "token": otpCode,
                     "type": "email"
                 ],
-                encoder: JSONEncoding.default
             )
         case .requestOtpCode(email: let email, let createUser):
             return .jsonObject(
@@ -63,12 +60,10 @@ extension AuthEndpoint {
                     "email": email,
                     "create_user": createUser
                 ],
-                encoder: JSONEncoding.default
             )
         case .refreshToken(refreshToken: let token):
             return .jsonObject(
                 data: ["refresh_token": token],
-                encoder: JSONEncoding.default
             )
         case .logout:
             return .plain
@@ -80,7 +75,6 @@ extension AuthEndpoint {
                     "provider": "apple",
                     "nonce": credential.nonce
                 ],
-                encoder: JSONEncoding.default
             )
         }
 

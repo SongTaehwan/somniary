@@ -1,5 +1,5 @@
 //
-//  SomniaryHTTPClient.swift
+//  HTTPClient.swift
 //  Somniary
 //
 //  Created by 송태환 on 9/30/25.
@@ -8,15 +8,7 @@
 import Foundation
 import Alamofire
 
-struct HTTPResponse {
-    let url: URL
-    let headers: [String:String]
-    let status: Int
-    let body: Data
-}
-
-final class SomniaryHTTPClient<Target: SomniaryEndpoint>: SomniaryNetworking {
-
+final class HTTPClient<Target: Endpoint>: HTTPNetworking {
     private let session: Session
 
     init(session: Session = Session.default) {
@@ -28,28 +20,34 @@ final class SomniaryHTTPClient<Target: SomniaryEndpoint>: SomniaryNetworking {
         print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path) \(String(describing: endpoint.headers))")
         #endif
 
-        let request = session.request(endpoint)
-        let dataTask = request.serializingData(automaticallyCancelling: true)
-        let responseData = await dataTask.response
-        let response = responseData.result
+        guard let request = try? endpoint.asURLRequest() else {
+            return .failure(TransportError.requestBuildFailed)
+        }
 
-        switch response {
-        case.success(let data):
-            let status = responseData.response?.statusCode
-            let headers = responseData.response?.allHeaderFields as? [String: String]
-            let url = responseData.request?.url
+        let dataRequest = session.request(request)
+        let dataResponse = await dataRequest.serializingData().response
 
-            if let status, let headers, let url {
-                return .success(HTTPResponse(url: url, headers: headers, status: status, body: data))
-            }
-
-            return .failure(Self.mapToTransportError(responseData.error))
-        case .failure(let error):
+        //  에러 핸들링
+        if let error = dataResponse.error {
             #if DEBUG
             print("🚨 [\(endpoint.method.rawValue)] \(endpoint.path)")
             #endif
             return .failure(Self.mapToTransportError(error))
         }
+
+        let response = dataResponse.result
+
+        // 응답 처리
+        guard let httpResponse = dataResponse.response, let url = dataResponse.request?.url else {
+//            DebugAssert.fail(category: .network, "네트워크 통신은 성공했지만 URL 정보나 HTTPResponse 정보가 없습니다.")
+            return .failure(TransportError.unknown)
+        }
+
+        let headers = httpResponse.allHeaderFields as? [String: String] ?? [:]
+        let status = httpResponse.statusCode
+        let body = dataResponse.data
+
+        return .success(HTTPResponse(url: url, headers: headers, status: status, body: body))
     }
 
     private static func mapToTransportError(_ error: Error?) -> TransportError {
@@ -57,6 +55,7 @@ final class SomniaryHTTPClient<Target: SomniaryEndpoint>: SomniaryNetworking {
             #if DEBUG
             print("🚨 ERROR: unexpected network error occured")
             #endif
+//            DebugAssert.fail(category: .network, "네트워크 에러 정보가 없습니다.")
             return .unknown
         }
 

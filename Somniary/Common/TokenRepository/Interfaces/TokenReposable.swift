@@ -7,11 +7,11 @@
 
 import Foundation
 
-protocol TokenReposable {
-    associatedtype TokenEntity
+protocol TokenReposable<Token> {
+    associatedtype Token
 
     func getAccessToken() -> String?
     func getRefreshToken() -> String?
-    func updateToken(_ token: TokenEntity) throws
+    func updateToken(_ token: Token) throws
     func clear()
 }

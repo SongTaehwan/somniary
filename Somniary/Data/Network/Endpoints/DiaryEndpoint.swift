@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import Alamofire
 
 enum DiaryEndpoint: SomniaryEndpoint {
-
     case createDiary(title: String, content: String)
     case getDiaryList
     case getDiary(id: String)
@@ -59,7 +57,6 @@ extension DiaryEndpoint {
                     "title": title,
                     "content": content
                 ],
-                encoder: JSONEncoding.default
             )
         case let .updateDiary(_, title, content):
             return .jsonObject(
@@ -67,7 +64,6 @@ extension DiaryEndpoint {
                     "title": title,
                     "content": content
                 ],
-                encoder: JSONEncoding.default
             )
         default:
             return .plain

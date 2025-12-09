@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import Alamofire
 
 enum UserEndpoint: SomniaryEndpoint {
-
     case getAuthUser
     case getProfile(id: String)
     case updateProfile(id: String, name: String)
@@ -44,8 +42,7 @@ extension UserEndpoint {
         switch self {
         case let .updateProfile(_, name: name):
             return .jsonObject(
-                data: ["name": name],
-                encoder: JSONEncoding.default
+                data: ["name": name]
             )
         default:
             return .plain

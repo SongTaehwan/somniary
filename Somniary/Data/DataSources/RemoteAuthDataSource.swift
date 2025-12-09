@@ -20,13 +20,14 @@ enum AuthDataSourceError: Error, Equatable {
     case unknown
 }
 
-// API 에러, 스키마 해석
+/// 책임: 네트워크 프로토콜 해석
+/// 1. Decoding/Encoding
+/// 2. 전송 계층 에러를 data source 에러로 매핑
 struct RemoteAuthDataSource: AuthDataSource {
-
-    private let client: any SomniaryNetworking<AuthEndpoint>
+    private let client: any HTTPNetworking<AuthEndpoint>
     private let decorder: JSONDecoder
 
-    init(client: any SomniaryNetworking<AuthEndpoint>, decorder: JSONDecoder = .init()) {
+    init(client: any HTTPNetworking<AuthEndpoint>, decorder: JSONDecoder = .init()) {
         self.client = client
         self.decorder = decorder
     }
@@ -37,7 +38,7 @@ struct RemoteAuthDataSource: AuthDataSource {
         switch result {
         case .success(let response):
             let decodingResult = Result<NetAuth.VoidResponse, AuthDataSourceError>.catching {
-                try decorder.decode(NetAuth.VoidResponse.self, from: response.body)
+                try decorder.decode(NetAuth.VoidResponse.self, from: response.body!)
             } mapError: { error in
                 return .badSchema
             }
@@ -61,7 +62,7 @@ struct RemoteAuthDataSource: AuthDataSource {
         switch result {
         case .success(let response):
             let decodingResult = Result<NetAuth.Verify.Response, AuthDataSourceError>.catching {
-                try decorder.decode(NetAuth.Verify.Response.self, from: response.body)
+                try decorder.decode(NetAuth.Verify.Response.self, from: response.body!)
             } mapError: { error in
                 return .badSchema
             }
@@ -82,7 +83,7 @@ struct RemoteAuthDataSource: AuthDataSource {
         switch result {
         case .success(let response):
             let decodingResult = Result<NetAuth.Verify.Response, AuthDataSourceError>.catching {
-                try decorder.decode(NetAuth.Verify.Response.self, from: response.body)
+                try decorder.decode(NetAuth.Verify.Response.self, from: response.body!)
             } mapError: { error in
                 return .badSchema
             }
