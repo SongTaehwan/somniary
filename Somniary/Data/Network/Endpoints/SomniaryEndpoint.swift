@@ -45,7 +45,9 @@ extension SomniaryEndpoint {
         }
 
         if case let .entity(data) = self.payload {
-            let data = try JSONEncoder().encode(data)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let data = try encoder.encode(data)
             return data
         }
 

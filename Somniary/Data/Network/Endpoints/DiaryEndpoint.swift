@@ -8,11 +8,11 @@
 import Foundation
 
 enum DiaryEndpoint: SomniaryEndpoint {
-    case createDiary(title: String, content: String)
-    case getDiaryList
-    case getDiary(id: String)
-    case updateDiary(id: String, title: String, content: String)
-    case deleteDiary(id: String)
+    case create(payload: NetDiary.Create.Request)
+    case getList
+    case get(id: String)
+    case update(id: String, payload: NetDiary.Update.Request)
+    case delete(id: String)
 }
 
 extension DiaryEndpoint {
@@ -23,26 +23,26 @@ extension DiaryEndpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .createDiary:
+        case .create:
             return .post
-        case .getDiaryList:
+        case .getList:
             return .get
-        case .getDiary:
+        case .get:
             return .get
-        case .updateDiary:
+        case .update:
             return .patch
-        case .deleteDiary:
+        case .delete:
             return .delete
         }
     }
 
     var queryItems: [URLQueryItem]? {
         switch self {
-        case let .getDiary(id: id):
+        case let .get(id: id):
             return [URLQueryItem(name: "id", value: "eq.\(id)")]
-        case let .updateDiary(id: id):
+        case let .update(id: id):
             return [URLQueryItem(name: "id", value: "eq.\(id)")]
-        case let .deleteDiary(id: id):
+        case let .delete(id: id):
             return [URLQueryItem(name: "id", value: "eq.\(id)")]
         default:
             return nil
@@ -51,20 +51,10 @@ extension DiaryEndpoint {
 
     var payload: RequestDataType? {
         switch self {
-        case let .createDiary(title, content):
-            return .jsonObject(
-                data: [
-                    "title": title,
-                    "content": content
-                ],
-            )
-        case let .updateDiary(_, title, content):
-            return .jsonObject(
-                data: [
-                    "title": title,
-                    "content": content
-                ],
-            )
+        case .create(let payload):
+            return .entity(data: payload)
+        case .update(_, let payload):
+            return .entity(data: payload)
         default:
             return .plain
         }

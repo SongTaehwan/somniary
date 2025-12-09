@@ -8,9 +8,9 @@
 import Foundation
 
 enum UserEndpoint: SomniaryEndpoint {
-    case getAuthUser
+    case getAuth
     case getProfile(id: String)
-    case updateProfile(id: String, name: String)
+    case update(id: String, name: String)
 }
 
 extension UserEndpoint {
@@ -20,18 +20,18 @@ extension UserEndpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .getAuthUser:
+        case .getAuth:
             return .get
         case .getProfile:
             return .get
-        case .updateProfile:
+        case .update:
             return .patch
         }
     }
 
     var queryItems: [URLQueryItem]? {
         switch self {
-        case let .updateProfile(id: id):
+        case let .update(id: id):
             return [URLQueryItem(name: "user_id", value: "eq.\(id))")]
         default:
             return nil
@@ -40,7 +40,7 @@ extension UserEndpoint {
 
     var payload: RequestDataType? {
         switch self {
-        case let .updateProfile(_, name: name):
+        case .update(_, let name):
             return .jsonObject(
                 data: ["name": name]
             )
