@@ -17,10 +17,11 @@ final class LoginCoordinator: FlowCoordinator {
 
     @MainActor
     private lazy var loginViewModel: LoginViewModel = {
-        let dataSource = DefaultRemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)
+        let dataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
+        let repository = DefaultRemoteAuthRepository(dataSource: dataSource)
         let reducerEnv = LoginReducerEnvironment { UUID() }
-        let flowEnv = LoginEnvironment(auth: dataSource, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
-        let executor = LoginExecutor(dataSource: dataSource, tokenRepository: TokenRepository.shared)
+        let flowEnv = LoginEnvironment(auth: repository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
+        let executor = LoginExecutor(dataSource: repository, tokenRepository: TokenRepository.shared)
         return LoginViewModel(coordinator: self, environment: flowEnv, executor: executor)
     }()
 

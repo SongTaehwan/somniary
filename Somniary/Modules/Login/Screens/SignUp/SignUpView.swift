@@ -64,7 +64,8 @@ struct SignUpView: View {
 }
 
 #Preview {
-    let authRepository = DefaultRemoteAuthRepository(client: NetworkClientProvider.authNetworkClient)
+    let dataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
+    let authRepository = DefaultRemoteAuthRepository(dataSource: dataSource)
     let environment = LoginEnvironment(
         auth: authRepository,
         reducerEnvironment: LoginReducerEnvironment { UUID() },
