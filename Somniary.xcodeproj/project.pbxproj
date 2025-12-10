@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E49E579E2EB90B0200C686C3 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = E49E579D2EB90B0200C686C3 /* README.md */; };
 		E4D48C7A2E740DC700D657D9 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E4D48C792E740DC700D657D9 /* KeychainAccess */; };
-		E4F501F72E78001A001E0B58 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E4F501F62E78001A001E0B58 /* .gitignore */; };
 		E4F504A82E8BA767001E0B58 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E4F504A72E8BA767001E0B58 /* Alamofire */; };
 /* End PBXBuildFile section */
 
@@ -43,7 +41,13 @@
 		E4F509072E8E3FB6001E0B58 /* Exceptions for "Somniary" folder in "Somniary" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Common/README.md,
+				Core/Domain/README.md,
+				Core/README.md,
+				Foundation/README.md,
+				Helpers/README.md,
 				Info.plist,
+				Infrastructure/README.md,
 			);
 			target = E413834E2E713AE400F9A185 /* Somniary */;
 		};
@@ -253,8 +257,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E49E579E2EB90B0200C686C3 /* README.md in Resources */,
-				E4F501F72E78001A001E0B58 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
