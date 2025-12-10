@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol DomainError: Error {
+protocol DomainError: Error, Equatable {
     /// 사용자에게 표시할 메시지
     var userMessage: String { get }
 

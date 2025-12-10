@@ -32,13 +32,6 @@ struct SomniaryError<Descriptor, Context>: DomainError where Descriptor: ErrorDe
     }
 }
 
-extension SomniaryError: Equatable where Descriptor: Equatable, Context: Equatable {
-    static func == (lhs: SomniaryError, rhs: SomniaryError) -> Bool {
-        lhs.descriptor == rhs.descriptor &&
-        lhs.context == rhs.context
-    }
-}
-
 // MARK: 로그 메시지
 extension SomniaryError {
     /// DEBUG 모드 시 debugLog, 아니면 structuredLog 반환

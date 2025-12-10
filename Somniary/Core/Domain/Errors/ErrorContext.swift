@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ErrorContext {
+protocol ErrorContext: Equatable {
     /// 원본 에러
     var errorSnapshot: ErrorSnapshot { get }
 

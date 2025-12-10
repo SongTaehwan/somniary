@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ErrorDescriptor: RawRepresentable where RawValue == String {
+protocol ErrorDescriptor: Equatable, RawRepresentable where RawValue == String {
     /// 사용자 메시지
     var userMessage: String { get }
 
