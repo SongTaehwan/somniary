@@ -24,10 +24,10 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
             try await self.dataSource.requestOtpCode(payload: .init(email: email, createUser: createUser), idempotencyKey: nil)
             return VoidResponse()
         } catch let error as RemoteDataSourceError {
-            throw mapToDomainError(error)
+            throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthenticationError.unexpected
+            throw AuthError.unexpected(snapshot: .init(from: error))
         }
     }
 
@@ -36,10 +36,10 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
             let dto = try await self.dataSource.verify(payload: .init(email: email, token: otpCode), idempotencyKey: nil)
             return TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
         } catch let error as RemoteDataSourceError {
-            throw mapToDomainError(error)
+            throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthenticationError.unexpected
+            throw AuthError.unexpected(snapshot: .init(from: error))
         }
     }
 
@@ -48,80 +48,100 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
             let dto = try await self.dataSource.verify(payload: .init(idToken: credential.identityToken, nonce: credential.nonce), idempotencyKey: nil)
             return TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
         } catch let error as RemoteDataSourceError {
-            throw mapToDomainError(error)
+            throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthenticationError.unexpected
+            throw AuthError.unexpected(snapshot: .init(from: error))
         }
     }
 
-    private func mapToDomainError(_ error: Error) -> AuthenticationError {
+    private func  mapToDomainAuthError(_ error: Error) -> AuthError {
         guard let datasourceError = error as? RemoteDataSourceError else {
-            return AuthenticationError.systemError(reason: error.localizedDescription)
+            return AuthError(category: .unexpected)
         }
 
         switch datasourceError {
-        case .unauthorized:
+        case .unauthorized, .forbidden:
             // 인증 필요
-            return .authenticationRequired
-        case .forbidden:
-            // 권한 없음
-            return .permissionDenied
-        case .notFound:
-            // 리소스
-            return .resourceNotFound
+            return AuthError(category: .authenticationRequired)
         case .conflict:
-            return .resourceAlreadyExists
+            return AuthError(category: .resourceAlreadyExists)
         case .networkUnavailable, .timeout:
             // 네트워크
-            return .networkUnavailable
+            return AuthError(category: .networkUnavailable)
         case .serverError:
             // 서버
-            return .serverError
+            return AuthError(category: .serverError)
         case .emptyResponse:
             // 응답 body가 없음 - 서버 응답 구조 문제
             DebugAssert.fail(category: .network, "Server returned empty response")
-            return .serverError
+            return AuthError(
+                category: .serverError,
+                message: "Server returned empty response"
+            )
         case .invalidRequest:
             // 클라이언트 버그로 생긴 오류
-            return .systemError(reason: "네트워크 요청 오류")
+            return AuthError(category: .systemError(reason: "네트워크 요청 오류"))
         case .securityError:
             // TLS/인증서 문제 - 클라이언트 또는 서버 설정 문제
             DebugAssert.fail(
                 category: .network,
                 "Security error - check SSL/TLS configuration"
             )
-            return .systemError(reason: "보안 오류")
+            return AuthError(
+                category: .systemError(reason: "보안 오류"),
+                message: "Security error - check SSL/TLS configuration"
+            )
         case .decodingFailed:
             DebugAssert.fail(category: .network, "Decoding failed")
-            return .systemError(reason: "디코딩 실패")
+
+            return AuthError(
+                category: .systemError(reason: "디코딩 실패"),
+                message: "Decoding failed"
+            )
         case .encodingFailed:
             DebugAssert.fail(
                 category: .network,
                 "Encoding failed - check request model definition"
             )
-            return .systemError(reason: "인코딩 실패")
+
+            return AuthError(
+                category: .systemError(reason: "인코딩 실패"),
+                message: "Encoding failed - check request model definition"
+            )
         case .requestBuildFailed:
             DebugAssert.fail(
                 category: .network,
                 "Request build failed - check endpoint configuration"
             )
-            return .systemError(reason: "요청 생성 실패")
+
+            return AuthError(
+                category: .systemError(reason: "요청 생성 실패"),
+                message: "Request build failed - check endpoint configuration"
+            )
         case .cancelled:
             // 요청된 작업 취소
-            return .operationCancelled
+            return AuthError(category: .operationCancelled)
         case .unknown:
             DebugAssert.fail(
                 category: .network,
                 "Unknown error - check network configuration"
             )
-            return .unknown
-        case .unexpected:
+
+            return AuthError(
+                category: .unknown,
+                message: "Unknown error - check network configuration"
+            )
+        case .unexpected, .notFound:
             DebugAssert.fail(
                 category: .network,
                 "Unexpected error - fatal error"
             )
-            return .unexpected
+
+            return AuthError(
+                category: .unexpected,
+                message: "DSError: \(datasourceError.localizedDescription)"
+            )
         }
     }
 }

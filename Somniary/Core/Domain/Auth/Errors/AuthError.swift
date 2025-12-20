@@ -7,30 +7,55 @@
 
 import Foundation
 
-enum AuthErrorDescriptor: String, ErrorDescriptor {
-    case credentialInvalid
-    case tokenExpired
+/// 특정 도메인 에러 케이스 정의
+enum AuthErrorDescriptor: ErrorDescriptor {
+    case resourceAlreadyExists
+    /// 취소
+    case operationCancelled
+    /// 인증 필요
+    case authenticationRequired
+    /// 네트워크 연결 불가
+    case networkUnavailable
+    /// 서버 오류
     case serverError
+    /// 클라이언트 버그 (앱 코드 문제)
+    case systemError(reason: String)
+    case serviceUnavailable
+    case unexpected
     case unknown
 
     var userMessage: String {
         switch self {
+        case .resourceAlreadyExists:
+            return "이미 가입된 계정입니다."
+        case .operationCancelled:
+            return "작업이 취소되었습니다."
+        case .authenticationRequired:
+            return "로그인이 필요한 서비스 입니다."
+        case .networkUnavailable:
+            return "네트워크가 연결되지 않았습니다."
         case .serverError:
             return "서버 에러가 발생했습니다."
-        case .credentialInvalid:
-            return "잘못된 계정 정보입니다."
-        case .tokenExpired:
-            return "토큰이 만료되었습니다."
-        case .unknown:
+        case .systemError(let reason):
+            return "서비스 오류 발생: \(reason)"
+        case .unknown, .unexpected:
             return "알 수 없는 오류가 발생했습니다."
+        case .serviceUnavailable:
+            return "현재는 사용이 불가능한 서비스입니다."
         }
     }
 
     var severity: ErrorSeverity {
         switch self {
-        case .serverError:
+        case .serverError, .unexpected, .unknown:
             return .critical
-        default:
+        case .systemError, .serviceUnavailable:
+            return .error
+        case .resourceAlreadyExists, .operationCancelled, .authenticationRequired:
+            return .info
+        case .networkUnavailable:
+            return .warning
+        @unknown default:
             return .warning
         }
     }
@@ -40,8 +65,7 @@ enum AuthErrorDescriptor: String, ErrorDescriptor {
     }
 }
 
-struct AuthErrorContext: ErrorContext, Equatable {
-
+struct AuthErrorContext: ErrorContext {
     enum AuthProvider: String, Equatable {
         case apple
         case google
@@ -69,9 +93,9 @@ struct AuthErrorContext: ErrorContext, Equatable {
         idempotencyKey: String? = nil,
         statusCode: Int? = nil,
         errorSnapshot: ErrorSnapshot = .unknown,
-        file: String = #file,
-        function: String = #function,
-        line: Int = #line
+        file: String,
+        function: String,
+        line: Int
     ) {
         self.provider = provider
         self.idempotencyKey = idempotencyKey
@@ -85,17 +109,47 @@ struct AuthErrorContext: ErrorContext, Equatable {
     }
 }
 
-extension AuthErrorContext {
-    static func == (lhs: AuthErrorContext, rhs: AuthErrorContext) -> Bool {
-        lhs.provider == rhs.provider &&
-        lhs.idempotencyKey == rhs.idempotencyKey &&
-        lhs.statusCode == rhs.statusCode
-    }
-}
-
 typealias AuthError = SomniaryError<AuthErrorDescriptor, AuthErrorContext>
 
 extension AuthError {
+    init(
+        category: AuthErrorDescriptor,
+        message: String = "",
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        self.init(
+            category: category,
+            context: .init(
+                provider: nil,
+                idempotencyKey: nil,
+                statusCode: nil,
+                errorSnapshot: ErrorSnapshot(typeName: "AuthError", message: message),
+                file: file,
+                function: function,
+                line: line
+            )
+        )
+    }
+
+    static func unexpected(
+        snapshot: ErrorSnapshot = .unknown,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) -> Self {
+        return AuthError(
+            category: .unexpected,
+            context: .init(
+                errorSnapshot: snapshot,
+                file: file,
+                function: function,
+                line: line
+            )
+        )
+    }
+
     static func unknown(
         snapshot: ErrorSnapshot = .unknown,
         file: String = #file,
