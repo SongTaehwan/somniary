@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ErrorDescriptor: Equatable, RawRepresentable where RawValue == String {
+protocol ErrorDescriptor: Equatable {
     /// 사용자 메시지
     var userMessage: String { get }
 
@@ -24,7 +24,7 @@ extension ErrorDescriptor {
 
         return ErrorInfo(
             domain: domain.rawValue,
-            errorType: rawValue,
+            errorType: String(describing: self),
             userMessage: userMessage,
             message: errorMessage,
             severity: severity,

@@ -14,8 +14,8 @@ struct ErrorSnapshot: Equatable {
 
     init(from error: Error?) {
         guard let error = error else {
-            self.typeName = "None"
-            self.message = ""
+            self.typeName = "Unknown"
+            self.message = "Unknown"
             self.code = nil
             return
         }
