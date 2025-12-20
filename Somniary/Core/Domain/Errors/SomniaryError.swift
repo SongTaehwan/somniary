@@ -61,7 +61,7 @@ extension SomniaryError {
         ║ \(severity.icon) ERROR DETAILS
         ╠══════════════════════════════════════════════════════════════
         ║ 📦 Domain    : \(descriptor.domain.rawValue.uppercased())
-        ║ 🎯 Case      : \(descriptor.rawValue)
+        ║ 🎯 Case      : \(String(describing: descriptor))
         ║ 🏷️ Type      : \(String(describing: type(of: self)))
         ╠──────────────────────────────────────────────────────────────
         ║ 💬 User Msg  : \(descriptor.userMessage)
@@ -86,7 +86,7 @@ extension SomniaryError {
         let errorOrigin = context.errorOrigin
 
         return """
-            [\(severity.icon) \(descriptor.domain.rawValue.uppercased()).\(descriptor.rawValue)]
+            [\(severity.icon) \(descriptor.domain.rawValue.uppercased()).\(String(describing: descriptor))]
                💬 \(descriptor.userMessage)
                💥 \(errorSnapshot.typeName): \(errorSnapshot.message)
                📍 \(errorOrigin.fileName):\(errorOrigin.line) in \(errorOrigin.function)
@@ -104,7 +104,7 @@ extension SomniaryError {
         let components = [
             "domain=\(descriptor.domain.rawValue)",
             "error_type=\(String(describing: type(of: descriptor)))",
-            "case=\(descriptor.rawValue)",
+            "case=\(String(describing: descriptor))",
             "severity=\(severity.rawValue)",
             "origin=\(errorOrigin.fileName):\(errorOrigin.line)",
             "function=\(errorOrigin.function)",

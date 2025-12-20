@@ -7,13 +7,7 @@
 
 import Foundation
 
-struct TokenEntity: Codable {
+struct TokenEntity: Codable, Equatable {
     let accessToken: String
     let refreshToken: String
-}
-
-extension TokenEntity: Equatable {
-    static func == (lhs: TokenEntity, rhs: TokenEntity) -> Bool {
-        lhs.accessToken == rhs.accessToken && lhs.refreshToken == rhs.refreshToken
-    }
 }
