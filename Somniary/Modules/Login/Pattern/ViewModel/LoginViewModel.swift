@@ -63,7 +63,7 @@ final class LoginViewModel: ViewModelType {
     private var cancellables = Set<AnyCancellable>()
     private let intents = PassthroughSubject<LoginIntent, Never>()
     private let executor: LoginExecutor
-    private let coordinator: LoginCoordinator
+    private let coordinator: any FlowCoordinator<LoginRoute>
     private let environment: LoginEnvironment
 
     /// UI 이벤트 전달
@@ -189,13 +189,13 @@ final class LoginViewModel: ViewModelType {
                 self.coordinator.finish()
 
             case .navigateSignUp:
-                self.coordinator.pushToSignUp()
+                self.coordinator.push(route: .signup)
 
             case .navigateOtpVerification:
-                self.coordinator.pushToVerification()
+                self.coordinator.push(route: .verification)
 
             case .navigateSignupCompletion:
-                self.coordinator.pushToCompletion()
+                self.coordinator.push(route: .completion)
 
             case .showToast(let message):
                 self.uiEvent.send(.toast(message))

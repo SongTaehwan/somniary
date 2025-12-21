@@ -59,24 +59,4 @@ final class LoginCoordinator: FlowCoordinator {
             LoginView(viewModel: self.loginViewModel)
         }
     }
-
-    func navigateToHome() {
-        self.finish()
-    }
-
-    func pushToSignIn() {
-        self.push(route: .main)
-    }
-
-    func pushToSignUp() {
-        self.push(route: .signup)
-    }
-
-    func pushToVerification() {
-        self.push(route: .verification)
-    }
-
-    func pushToCompletion() {
-        self.push(route: .completion)
-    }
 }
