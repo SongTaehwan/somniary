@@ -9,11 +9,7 @@ import SwiftUI
 
 @main
 struct SomniaryApp: App {
-
-    @StateObject private var coordinator = AppCoordinator(
-        appLaunchChecker: AppLaunchChecker.shared,
-        tokenRepository: TokenRepository.shared
-    )
+    @State private var coordinator = AppContainer.shared.makeAppCoordinator()
 
     var body: some Scene {
         WindowGroup {

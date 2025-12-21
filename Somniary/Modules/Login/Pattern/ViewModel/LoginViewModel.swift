@@ -71,7 +71,7 @@ final class LoginViewModel: ViewModelType {
 
     // MARK: initializer
     init(
-        coordinator: LoginCoordinator,
+        coordinator: any FlowCoordinator<LoginRoute>,
         environment: LoginEnvironment,
         executor: LoginExecutor
     ) {

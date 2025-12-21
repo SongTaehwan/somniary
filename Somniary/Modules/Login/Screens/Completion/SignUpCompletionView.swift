@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SignUpCompletionView: View {
-
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
@@ -40,16 +39,5 @@ struct SignUpCompletionView: View {
 }
 
 #Preview {
-    let dataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
-    let authRepository = DefaultRemoteAuthRepository(dataSource: dataSource)
-    let environment = LoginEnvironment(
-        auth: authRepository,
-        reducerEnvironment: LoginReducerEnvironment { UUID() },
-        crypto: NonceGenerator.shared
-    )
-    SignUpCompletionView(viewModel: .init(
-        coordinator: .init(),
-        environment: environment,
-        executor: LoginExecutor(dataSource: authRepository, tokenRepository: TokenRepository.shared))
-    )
+    SignUpCompletionView(viewModel: AppContainer.shared.makeLoginViewModel(nil))
 }
