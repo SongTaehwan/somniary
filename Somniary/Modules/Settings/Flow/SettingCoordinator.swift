@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+protocol SettingCoordinatorDependency {
+    @MainActor func makeSettingViewModel(_ coordinator: (any FlowCoordinator<SettingRoute>)?) -> SettingViewModel
+}
+
 final class SettingCoordinator: FlowCoordinator {
     typealias Route = SettingRoute
 
@@ -16,7 +20,15 @@ final class SettingCoordinator: FlowCoordinator {
     @Published var childPresentationType: PresentationType?
     @Published var navigationControllers = [NavigationController<Route>]()
 
-    init() {
+    @MainActor
+    private lazy var settingViewModel: SettingViewModel = {
+        return self.dependency.makeSettingViewModel(self)
+    }()
+
+    private let dependency: SettingCoordinatorDependency
+
+    init(dependency container: SettingCoordinatorDependency) {
+        self.dependency = container
         self.initializeRootNavigationController()
     }
 
@@ -27,7 +39,7 @@ final class SettingCoordinator: FlowCoordinator {
     func destination(for route: Route) -> some View {
         switch route {
         case .main:
-            SettingEntryView()
+            SettingEntryView(viewModel: self.settingViewModel)
         @unknown default:
             EmptyView()
         }
@@ -38,7 +50,7 @@ final class SettingCoordinator: FlowCoordinator {
             coordinator: self,
             navigationController: self.rootNavigationController
         ) {
-            SettingEntryView()
+            SettingEntryView(viewModel: self.settingViewModel)
         }
     }
 }

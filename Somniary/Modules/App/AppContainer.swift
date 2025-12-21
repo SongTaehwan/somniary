@@ -10,16 +10,10 @@ import Foundation
 final class AppContainer: AppCoordinatorDependency {
     static let shared = AppContainer()
 
-    private let authDataSource: DefaultRemoteAuthDataSource
-
-    init() {
-        self.authDataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
-    }
+    private let authDataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
 
     func makeAppCoordinator() -> AppCoordinator {
-        return AppCoordinator(
-            container: self
-        )
+        return AppCoordinator(container: self)
     }
 
     func makeStartFlowCoodinator() -> any Coordinator {
@@ -27,7 +21,15 @@ final class AppContainer: AppCoordinatorDependency {
             return LoginCoordinator(dependency: self)
         }
 
-        return TabBarCoordinator()
+        let tabBar = TabBarCoordinator(childCoordinators: [
+            .home: EmptyCoordinator(),
+            .diary: EmptyCoordinator(),
+            .settings: SettingCoordinator(dependency: self)
+        ])
+
+        tabBar.activeTab = .settings
+
+        return tabBar
     }
 
     func makeDeeplinkCoordinator() -> DeeplinkCoordinator {
@@ -39,10 +41,6 @@ final class AppContainer: AppCoordinatorDependency {
 
 // MARK: 로그인 플로우
 extension AppContainer: LoginCoordinatorDependency {
-    func makeLoginFlowCoordinator() -> LoginCoordinator {
-        return LoginCoordinator(dependency: self)
-    }
-
     @MainActor func makeLoginViewModel(_ coordinator: (any FlowCoordinator<LoginRoute>)?) -> LoginViewModel {
         let flow = coordinator ?? LoginCoordinator(dependency: self)
         let repository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
@@ -54,4 +52,9 @@ extension AppContainer: LoginCoordinatorDependency {
 }
 
 // MARK: 설정 탭 플로우
-
+extension AppContainer: SettingCoordinatorDependency {
+    @MainActor func makeSettingViewModel(_ coordinator: (any FlowCoordinator<SettingRoute>)?) -> SettingViewModel {
+        let flow = coordinator ?? SettingCoordinator(dependency: self)
+        return SettingViewModel(coordinator: flow)
+    }
+}

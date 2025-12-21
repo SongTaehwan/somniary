@@ -50,10 +50,8 @@ final class TabBarCoordinator: CompositionCoordinator {
 
     @Published var activeTab = Tab.home
 
-    init() {
-        self.childCoordinators[.home] = EmptyCoordinator()
-        self.childCoordinators[.diary] = EmptyCoordinator()
-        self.childCoordinators[.settings] = EmptyCoordinator()
+    init(childCoordinators: [Tab: any Coordinator] = [:]) {
+        self.childCoordinators = childCoordinators
     }
 
     deinit {
