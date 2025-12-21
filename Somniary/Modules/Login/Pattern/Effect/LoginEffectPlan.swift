@@ -8,8 +8,7 @@
 import Foundation
 
 /// 무엇을 할지가 아닌 어떻게 할지에 초점
-struct LoginEffectPlan: Equatable {
-
+struct LoginEffectPlan: EffectPlan {
     enum EffectType: Equatable {
         /// API effect
         case requestLoginCode(email: String, requestId: UUID)
@@ -128,14 +127,7 @@ extension LoginEffectPlan {
         )
     }
 
-    enum LogLevel: String {
-        case debug = "🐛"
-        case info = "ℹ️"
-        case error = "🚨"
-        case warning = "⚠️"
-    }
-
-    static func logEvent(_ message: String, level: LogLevel = LogLevel.info) -> Self {
+    static func logEvent(_ message: String, level: EffectLogLevel = EffectLogLevel.info) -> Self {
         let log = "[\(level.rawValue)] \(message)"
         return .make(.logEvent(log))
     }
@@ -144,7 +136,7 @@ extension LoginEffectPlan {
         let log =
         """
         --------------------------------------
-        [\(LogLevel.error.rawValue)] \(message)
+        [\(EffectLogLevel.error.rawValue)] \(message)
         \(errorMessage)
         --------------------------------------
         """
