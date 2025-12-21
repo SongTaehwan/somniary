@@ -11,7 +11,43 @@ struct SettingEntryView: View {
     @ObservedObject var viewModel: SettingViewModel
 
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            Button {
+                viewModel.send(.user(.profileTapped))
+            } label: {
+                HStack {
+                    Image(systemName: viewModel.state.profile?.thumbnail ?? "person.crop.circle")
+                        .resizable()
+                        .renderingMode(.original)
+                        .frame(width: 50, height: 50)
+
+                    VStack(alignment: .leading) {
+                        Text(viewModel.state.profile?.name ?? "홍길동")
+                        Text(viewModel.state.profile?.email ?? "aldkjf@gmail.com")
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+
+            List {
+                Button {
+                    viewModel.send(.user(.notificationSettingTapped))
+                } label: {
+                    Text("알림 설정")
+                }
+
+                Button {
+                    viewModel.send(.user(.logoutTapped))
+                } label: {
+                    Text("로그아웃")
+                }
+            }
+            .listStyle(.plain)
+        }
+        .padding()
+        .onAppear {
+            viewModel.send(.lifecycle(.appeared))
+        }
     }
 }
 
