@@ -7,23 +7,22 @@
 
 import SwiftUI
 
-/// App Root Coodinator
-/// 딥링크 핸들러 및 의존성 초기화
-final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
+protocol AppCoordinatorDependency {
+    func makeDeeplinkCoordinator() -> DeeplinkCoordinator
+    func makeStartFlowCoodinator() -> any Coordinator
+}
 
-    private let deeplinkCoordinator = DeeplinkCoordinator()
+/// App Root Coodinator
+final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
     @Published private var startCoordinator: any Coordinator
 
-    init(appLaunchChecker: AppLaunchChecking, tokenRepository: TokenReposable) {
-        // TODO: 딥링크를 지원하는 coordinator 등록
-        deeplinkCoordinator.addHandlers([])
+    private let deeplinkCoordinator: DeeplinkCoordinator
+    private let denpdency: AppCoordinatorDependency
 
-        if appLaunchChecker.isFirstLaunch || tokenRepository.getAccessToken() == nil {
-            self.startCoordinator = LoginCoordinator()
-        } else {
-            self.startCoordinator = TabBarCoordinator()
-        }
-
+    init(container: AppCoordinatorDependency) {
+        self.denpdency = container
+        self.deeplinkCoordinator = container.makeDeeplinkCoordinator()
+        self.startCoordinator = container.makeStartFlowCoodinator()
         self.startCoordinator.finishDelegate = self
     }
 
@@ -51,5 +50,6 @@ final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
 
     private func navigateToHome() {
         self.startCoordinator = TabBarCoordinator()
+        self.startCoordinator.finishDelegate = self
     }
 }

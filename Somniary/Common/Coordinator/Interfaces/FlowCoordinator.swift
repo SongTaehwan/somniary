@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Flow 정의 및 라우팅 처리 담당 Coordinator
-protocol FlowCoordinator: Coordinator {
+protocol FlowCoordinator<Route>: Coordinator {
 
     associatedtype Route: Routable
     associatedtype Destination: View

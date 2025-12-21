@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+protocol LoginCoordinatorDependency {
+    @MainActor func makeLoginViewModel(_ coordinator: (any FlowCoordinator<LoginRoute>)?) -> LoginViewModel
+}
+
 final class LoginCoordinator: FlowCoordinator {
     
     weak var finishDelegate: CoordinatorFinishDelegate?
@@ -17,15 +21,13 @@ final class LoginCoordinator: FlowCoordinator {
 
     @MainActor
     private lazy var loginViewModel: LoginViewModel = {
-        let dataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
-        let repository = DefaultRemoteAuthRepository(dataSource: dataSource)
-        let reducerEnv = LoginReducerEnvironment { UUID() }
-        let flowEnv = LoginEnvironment(auth: repository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
-        let executor = LoginExecutor(dataSource: repository, tokenRepository: TokenRepository.shared)
-        return LoginViewModel(coordinator: self, environment: flowEnv, executor: executor)
+        return self.dependency.makeLoginViewModel(self)
     }()
 
-    init() {
+    private let dependency: LoginCoordinatorDependency
+
+    init(dependency: LoginCoordinatorDependency) {
+        self.dependency = dependency
         self.initializeRootNavigationController()
     }
 
@@ -58,25 +60,5 @@ final class LoginCoordinator: FlowCoordinator {
         ) {
             LoginView(viewModel: self.loginViewModel)
         }
-    }
-
-    func navigateToHome() {
-        self.finish()
-    }
-
-    func pushToSignIn() {
-        self.push(route: .main)
-    }
-
-    func pushToSignUp() {
-        self.push(route: .signup)
-    }
-
-    func pushToVerification() {
-        self.push(route: .verification)
-    }
-
-    func pushToCompletion() {
-        self.push(route: .completion)
     }
 }

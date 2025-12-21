@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct LoginVerificationView: View {
-    
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
@@ -46,16 +45,5 @@ struct LoginVerificationView: View {
 }
 
 #Preview {
-    let dataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
-    let authRepository = DefaultRemoteAuthRepository(dataSource: dataSource)
-    let environment = LoginEnvironment(
-        auth: authRepository,
-        reducerEnvironment: LoginReducerEnvironment { UUID() },
-        crypto: NonceGenerator.shared
-    )
-    LoginVerificationView(viewModel: .init(
-        coordinator: .init(),
-        environment: environment,
-        executor: LoginExecutor(dataSource: authRepository, tokenRepository: TokenRepository.shared))
-    )
+    LoginVerificationView(viewModel: AppContainer.shared.makeLoginViewModel(nil))
 }
