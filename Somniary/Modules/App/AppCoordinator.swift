@@ -14,7 +14,7 @@ final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
     private let deeplinkCoordinator = DeeplinkCoordinator()
     @Published private var startCoordinator: any Coordinator
 
-    init(appLaunchChecker: AppLaunchChecking, tokenRepository: TokenReposable) {
+    init(appLaunchChecker: AppLaunchChecking, tokenRepository: any TokenReposable) {
         // TODO: 딥링크를 지원하는 coordinator 등록
         deeplinkCoordinator.addHandlers([])
 
