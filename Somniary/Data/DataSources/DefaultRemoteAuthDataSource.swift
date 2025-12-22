@@ -19,7 +19,7 @@ struct DefaultRemoteAuthDataSource: RemoteAuthDataSource, DataSourceSupport {
         self.decorder = decorder
     }
 
-    private func handleHttpResult<T: Decodable>(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> T {
+    private func handleHttpResult(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> HTTPResponse {
         if case .failure(let failure) = result {
             throw failure
         }
@@ -33,24 +33,40 @@ struct DefaultRemoteAuthDataSource: RemoteAuthDataSource, DataSourceSupport {
             }
         }()
 
-        return try self.decodeResponse(httpResponse)
+        return httpResponse
+    }
+
+    private func decodeHttpResult<T: Decodable>(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> T {
+        let httpResponse = try self.handleHttpResult(result)
+        return try decodeResponse(httpResponse)
     }
 
     func requestOtpCode(payload: NetAuth.OTP.Request, idempotencyKey: String?) async throws -> NetCommon.Void {
         let httpResult = await client.request(.requestOtpCode(payload: payload))
             .mapError { self.mapTransportError($0) }
-        return try handleHttpResult(httpResult)
+        return try decodeHttpResult(httpResult)
     }
 
     func verify(payload: NetAuth.Email.Request, idempotencyKey: String?) async throws -> NetAuth.Email.Response {
         let httpResult = await client.request(.verify(payload: payload))
             .mapError { self.mapTransportError($0) }
-        return try handleHttpResult(httpResult)
+        return try decodeHttpResult(httpResult)
     }
 
     func verify(payload: NetAuth.Apple.Request, idempotencyKey: String?) async throws -> NetAuth.Apple.Response {
         let httpResult = await client.request(.authenticateWithApple(payload: payload))
             .mapError { self.mapTransportError($0) }
-        return try handleHttpResult(httpResult)
+        return try decodeHttpResult(httpResult)
+    }
+
+    func logout() async throws {
+        let httpResult = await client.request(.logout)
+            .mapError { self.mapTransportError($0) }
+
+        if case .failure(let failure) = httpResult {
+            throw failure
+        }
+
+        return
     }
 }
