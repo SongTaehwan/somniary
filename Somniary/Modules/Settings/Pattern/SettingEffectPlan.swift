@@ -12,7 +12,7 @@ struct SettingEffectPlan: EffectPlan {
         // API
         case logout
         case getProfile
-        case updateProfile
+        case updateProfile(id: String, name: String, email: String)
 
         // UI Effect
         case showToast(String)

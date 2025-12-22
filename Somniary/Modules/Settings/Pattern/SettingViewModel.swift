@@ -7,15 +7,9 @@
 
 import Combine
 
-struct Profile: Equatable {
-    let name: String
-    let email: String
-    let thumbnail: String = "person.crop.circle"
-}
-
 final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffectPlan, SettingIntent, SettingRoute> {
     struct State: Equatable {
-        var profile: Profile?
+        var profile: UserProfile?
         var errorMessage: String?
     }
 
