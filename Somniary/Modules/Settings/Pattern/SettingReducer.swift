@@ -66,9 +66,17 @@ fileprivate func reduceSystemInternalIntent(
     state: State,
     intent: Intent.SystemInternalIntent
 ) -> (State, [Plan]) {
+    var newState = state
+
     switch intent {
-    case .logoutResponse:
-        // TODO: Go to login flow
+    case .logoutResponse(let response):
+        if case .failure(let failure) = response {
+            newState.errorMessage = failure.userMessage
+            return (newState, [
+                .logEvent(failure.debugLog)
+            ])
+        }
+
         return (state, [
             .logEvent("Redirect to login flow"),
             .route(.finishFlow)

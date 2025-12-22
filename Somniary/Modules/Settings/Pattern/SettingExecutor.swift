@@ -8,9 +8,10 @@
 import Foundation
 
 final class SettingExecutor: EffectExecuting {
+    private let logoutUseCase: LogoutUseCase
 
-    init() {
-        // TODO: Add Deps
+    init(logoutUseCase: LogoutUseCase) {
+        self.logoutUseCase = logoutUseCase
     }
 
     func perform(_ plan: SettingEffectPlan, send: @escaping (SettingIntent) -> Void) {
@@ -24,14 +25,26 @@ final class SettingExecutor: EffectExecuting {
             send(.systemInternal(.profileResponse))
             break
         case .logout:
-            TokenRepository.shared.clear()
-            // TODO: Start logout usecase
-            send(.systemInternal(.logoutResponse))
+            handleLogout { result in
+                send(.systemInternal(.logoutResponse(result)))
+            }
         case .logEvent(let message):
             print(message)
             break
         default:
             break
+        }
+    }
+
+    private func handleLogout(callback: @escaping (Result<VoidResponse, AuthError>) -> Void) {
+        Task {
+            let result = await Result.catching {
+                try await logoutUseCase.execute()
+            } mapError: { error in
+                error as? AuthError ?? .unknown()
+            }
+
+            callback(result)
         }
     }
 }
