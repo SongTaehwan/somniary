@@ -40,6 +40,10 @@ final class SettingCoordinator: FlowCoordinator {
         switch route {
         case .main:
             SettingEntryView(viewModel: self.settingViewModel)
+        case .notification:
+            Text("Notificaiton")
+        case .profile:
+            Text("Profile")
         @unknown default:
             EmptyView()
         }

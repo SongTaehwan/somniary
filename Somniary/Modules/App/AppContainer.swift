@@ -55,6 +55,7 @@ extension AppContainer: LoginCoordinatorDependency {
 extension AppContainer: SettingCoordinatorDependency {
     @MainActor func makeSettingViewModel(_ coordinator: (any FlowCoordinator<SettingRoute>)?) -> SettingViewModel {
         let flow = coordinator ?? SettingCoordinator(dependency: self)
-        return SettingViewModel(coordinator: flow)
+        let executor = SettingExecutor()
+        return SettingViewModel(coordinator: flow, executor: executor)
     }
 }
