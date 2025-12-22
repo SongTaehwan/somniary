@@ -88,3 +88,27 @@ extension DataSourceSupport {
         }
     }
 }
+
+extension DataSourceSupport {
+    func handleHttpResult(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> HTTPResponse {
+        if case .failure(let failure) = result {
+            throw failure
+        }
+
+        let httpResponse: HTTPResponse = try {
+            do {
+                return try result.get()
+            } catch {
+                DebugAssert.fail(category: .network, "Unexpected error: \(error)")
+                throw RemoteDataSourceError.unexpected
+            }
+        }()
+
+        return httpResponse
+    }
+
+    func decodeHttpResult<T: Decodable>(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> T {
+        let httpResponse = try self.handleHttpResult(result)
+        return try decodeResponse(httpResponse)
+    }
+}

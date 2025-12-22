@@ -19,28 +19,6 @@ struct DefaultRemoteAuthDataSource: RemoteAuthDataSource, DataSourceSupport {
         self.decorder = decorder
     }
 
-    private func handleHttpResult(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> HTTPResponse {
-        if case .failure(let failure) = result {
-            throw failure
-        }
-
-        let httpResponse: HTTPResponse = try {
-            do {
-                return try result.get()
-            } catch {
-                DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-                throw RemoteDataSourceError.unexpected
-            }
-        }()
-
-        return httpResponse
-    }
-
-    private func decodeHttpResult<T: Decodable>(_ result: Result<HTTPResponse, RemoteDataSourceError>) throws -> T {
-        let httpResponse = try self.handleHttpResult(result)
-        return try decodeResponse(httpResponse)
-    }
-
     func requestOtpCode(payload: NetAuth.OTP.Request, idempotencyKey: String?) async throws -> NetCommon.Void {
         let httpResult = await client.request(.requestOtpCode(payload: payload))
             .mapError { self.mapTransportError($0) }
