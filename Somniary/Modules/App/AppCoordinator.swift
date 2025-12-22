@@ -38,15 +38,16 @@ final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
 
     /// 코디네이터 플로우가 종료된 경우 네비게이션 처리
     func didFinish(childCoordinator: any Coordinator) {
-        switch childCoordinator {
-        case is LoginCoordinator:
-            self.startCoordinator = self.denpdency.makeStartFlowCoordinator()
-        case is TabBarCoordinator:
-            self.startCoordinator = self.denpdency.makeLoginFlowCoordinator()
-        default:
-            break
+        Task { @MainActor in
+            switch childCoordinator {
+            case is LoginCoordinator:
+                self.startCoordinator = self.denpdency.makeStartFlowCoordinator()
+            case is TabBarCoordinator:
+                self.startCoordinator = self.denpdency.makeLoginFlowCoordinator()
+            default:
+                break
+            }
+            self.startCoordinator.finishDelegate = self
         }
-
-        self.startCoordinator.finishDelegate = self
     }
 }
