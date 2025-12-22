@@ -9,6 +9,11 @@ import Foundation
 
 struct SettingEffectPlan: EffectPlan {
     enum EffectType: Equatable {
+        // API
+        case logout
+        case getProfile
+        case updateProfile
+
         // UI Effect
         case showToast(String)
 
@@ -19,7 +24,7 @@ struct SettingEffectPlan: EffectPlan {
         case navigateToEntry
         case navigateToProfileEdit
         case navigateToNotificationSetting
-        case finish
+        case finishFlow
     }
 
     let type: EffectType
@@ -37,7 +42,7 @@ extension SettingEffectPlan {
     static func route(_ type: EffectType) -> Self {
         precondition({
             switch type {
-            case .navigateToProfileEdit, .navigateToNotificationSetting:
+            case .navigateToProfileEdit, .navigateToNotificationSetting, .finishFlow, .navigateToEntry:
                 return true
             default:
                 return false
