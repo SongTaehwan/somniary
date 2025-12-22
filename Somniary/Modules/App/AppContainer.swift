@@ -16,15 +16,16 @@ final class AppContainer: AppCoordinatorDependency {
         return AppCoordinator(container: self)
     }
 
-    func makeStartFlowCoodinator() -> any Coordinator {
-        if AppLaunchChecker.shared.isFirstLaunch || TokenRepository.shared.getAccessToken() == nil {
-            return LoginCoordinator(dependency: self)
+    func makeStartFlowCoordinator() -> any Coordinator {
+        if TokenRepository.shared.getAccessToken() == nil {
+            return self.makeLoginFlowCoordinator()
         }
 
+        let settings = SettingCoordinator(dependency: self)
         let tabBar = TabBarCoordinator(childCoordinators: [
             .home: EmptyCoordinator(),
             .diary: EmptyCoordinator(),
-            .settings: SettingCoordinator(dependency: self)
+            .settings: settings
         ])
 
         tabBar.activeTab = .settings
@@ -36,6 +37,10 @@ final class AppContainer: AppCoordinatorDependency {
         let coordinator = DeeplinkCoordinator()
         coordinator.addHandlers([])
         return coordinator
+    }
+
+    func makeLoginFlowCoordinator() -> any Coordinator {
+        return LoginCoordinator(dependency: self)
     }
 }
 

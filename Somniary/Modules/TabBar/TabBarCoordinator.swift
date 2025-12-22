@@ -52,6 +52,9 @@ final class TabBarCoordinator: CompositionCoordinator {
 
     init(childCoordinators: [Tab: any Coordinator] = [:]) {
         self.childCoordinators = childCoordinators
+        self.childCoordinators.values.forEach { child in
+            child.finishDelegate = self
+        }
     }
 
     deinit {
@@ -74,5 +77,10 @@ final class TabBarCoordinator: CompositionCoordinator {
         } else {
             AnyView(EmptyView())
         }
+    }
+
+    // 개별 탭 Flow 종료 시 TabBarCoordinator 종료 처리
+    func didFinish(childCoordinator: any Coordinator) {
+        self.finish()
     }
 }
