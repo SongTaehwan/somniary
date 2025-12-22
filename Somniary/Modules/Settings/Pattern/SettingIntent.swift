@@ -23,6 +23,8 @@ enum SettingIntent: Equatable {
 
     enum SystemInternalIntent: Equatable {
         case logoutResponse
+        case profileUpdateResponse
+        case profileResponse
     }
 
     enum NavigationIntent: Equatable {
@@ -42,7 +44,4 @@ enum SettingIntent: Equatable {
 
     // Internal(Effect)
     case systemInternal(SystemInternalIntent)
-
-    // Navigation
-    case navigation(NavigationIntent)
 }

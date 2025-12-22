@@ -48,9 +48,10 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
                 self.coordinator.push(route: .profile)
             case .navigateToNotificationSetting:
                 self.coordinator.push(route: .notification)
-            case .finish:
+            case .finishFlow:
                 self.coordinator.finish()
             default:
+                print("Execute: \(plan.type)")
                 executor.perform(plan, send: self.send)
             }
         }

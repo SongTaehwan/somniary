@@ -17,7 +17,11 @@ fileprivate func reduceLicycleIntent(
 ) -> (State, [Plan]) {
     switch intent {
     case .appeared:
-        return (state, [.logEvent("View Appeared")])
+        return (state, [
+            .logEvent("Start Fetching profile"),
+            .make(.getProfile),
+            .logEvent("End Fetching profile")
+        ])
     }
 }
 
@@ -27,11 +31,27 @@ fileprivate func reduceUserIntent(
 ) -> (State, [Plan]) {
     switch intent {
     case .profileTapped:
-        return (state, [.route(.navigateToProfileEdit)])
+        return (state, [
+            .logEvent("Navigate To Profile Edit"),
+            .route(.navigateToProfileEdit)
+        ])
     case .notificationSettingTapped:
-        return (state, [.route(.navigateToNotificationSetting)])
+        return (state, [
+            .logEvent("Navigate To Notification Setting"),
+            .route(.navigateToNotificationSetting),
+        ])
     case .logoutTapped:
-        return (state, [])
+        return (state, [
+            .logEvent("Start logout"),
+            .make(.logout),
+            .logEvent("End logout")
+        ])
+    case .profileEditConfirmTapped:
+        return (state, [
+            .logEvent("Start updating profile"),
+            .make(.updateProfile),
+            .logEvent("End updating profile")
+        ])
     }
 }
 
@@ -48,22 +68,20 @@ fileprivate func reduceSystemInternalIntent(
 ) -> (State, [Plan]) {
     switch intent {
     case .logoutResponse:
-        // Go to login flow
-        return (state, [.route(.finish)])
-    }
-}
-
-fileprivate func reduceNavigationIntent(
-    state: State,
-    intent: Intent.NavigationIntent
-) -> (State, [Plan]) {
-    switch intent {
-    case .routeToHome:
-        return (state, [.route(.navigateToEntry)])
-    case .routeToProfileEdit:
-        return (state, [.route(.navigateToNotificationSetting)])
-    case .routeToNotificationSettings:
-        return (state, [.route(.navigateToProfileEdit)])
+        // TODO: Go to login flow
+        return (state, [
+            .logEvent("Redirect to login flow"),
+            .route(.finishFlow)
+        ])
+    case .profileResponse:
+        // TODO: Update state with profile
+        return (state, [
+            .logEvent("Store fetched profile")
+        ])
+    case .profileUpdateResponse:
+        return (state, [
+            .logEvent("Update profile done")
+        ])
     }
 }
 
@@ -80,7 +98,5 @@ func combinedSettingReducer(
         return reduceSystemExternalIntent(state: state, intent: intent)
     case .systemInternal(let intent):
         return reduceSystemInternalIntent(state: state, intent: intent)
-    case .navigation(let intent):
-        return reduceNavigationIntent(state: state, intent: intent)
     }
 }
