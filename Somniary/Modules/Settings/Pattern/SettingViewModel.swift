@@ -16,6 +16,7 @@ struct Profile: Equatable {
 final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffectPlan, SettingIntent, SettingRoute> {
     struct State: Equatable {
         var profile: Profile?
+        var errorMessage: String?
     }
 
     init(coordinator: Coordinator, executor: Executor) {

@@ -11,4 +11,5 @@ protocol RemoteAuthRepository {
     func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async throws -> VoidResponse
     func verify(email: String, otpCode: String, idempotencyKey: String?) async throws -> TokenEntity
     func verify(credential: AppleCredential, idempotencyKey: String?) async throws -> TokenEntity
+    func logout() async throws -> Void
 }

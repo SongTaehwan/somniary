@@ -31,6 +31,21 @@ extension AuthEndpoint {
         }
     }
 
+    var headers: HTTPHeaders? {
+        var headers = [
+            "apiKey": AppInfo.shared.domainClientKey,
+            "Content-Type": "application/json"
+        ]
+
+        switch self {
+        case .logout:
+            headers.updateValue("Bearer \(TokenRepository.shared.getAccessToken() ?? "")", forKey: "Authorization")
+            return headers
+        default:
+            return headers
+        }
+    }
+
     var method: HTTPMethod { .post }
 
     var queryItems: [URLQueryItem]? {

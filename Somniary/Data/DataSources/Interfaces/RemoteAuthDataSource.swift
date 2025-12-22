@@ -8,6 +8,8 @@
 import Foundation
 
 protocol RemoteAuthDataSource {
+    func logout() async throws -> Void
+
     /// 이메일 로그인 인증 코드 요청
     @discardableResult
     func requestOtpCode(payload: NetAuth.OTP.Request, idempotencyKey: String?) async throws -> NetCommon.Void

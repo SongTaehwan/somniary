@@ -11,6 +11,7 @@ final class AppContainer: AppCoordinatorDependency {
     static let shared = AppContainer()
 
     private let authDataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
+    private lazy var repository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
 
     func makeAppCoordinator() -> AppCoordinator {
         return AppCoordinator(container: self)
@@ -48,7 +49,6 @@ final class AppContainer: AppCoordinatorDependency {
 extension AppContainer: LoginCoordinatorDependency {
     @MainActor func makeLoginViewModel(_ coordinator: (any FlowCoordinator<LoginRoute>)?) -> LoginViewModel {
         let flow = coordinator ?? LoginCoordinator(dependency: self)
-        let repository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
         let reducerEnv = LoginReducerEnvironment { UUID() }
         let flowEnv = LoginEnvironment(auth: repository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
         let executor = LoginExecutor(dataSource: repository, tokenRepository: TokenRepository.shared)
@@ -60,7 +60,8 @@ extension AppContainer: LoginCoordinatorDependency {
 extension AppContainer: SettingCoordinatorDependency {
     @MainActor func makeSettingViewModel(_ coordinator: (any FlowCoordinator<SettingRoute>)?) -> SettingViewModel {
         let flow = coordinator ?? SettingCoordinator(dependency: self)
-        let executor = SettingExecutor()
+        let logoutUsecase = LogoutUseCase(authRepository: self.repository)
+        let executor = SettingExecutor(logoutUseCase: logoutUsecase)
         return SettingViewModel(coordinator: flow, executor: executor)
     }
 }
