@@ -8,24 +8,19 @@
 import Foundation
 
 enum UserEndpoint: SomniaryEndpoint {
-    case getAuth
-    case getProfile(id: String)
+    case getProfile
+    case getProfileById(id: String)
     case update(id: String, payload: NetProfile.Update.Request)
 }
 
 extension UserEndpoint {
     var path: String {
-        switch self {
-        case .getAuth:
-            return "/auth/v1/user"
-        case .getProfile, .update:
-            return "/rest/v1/profiles"
-        }
+        return "/rest/v1/profiles"
     }
 
     var method: HTTPMethod {
         switch self {
-        case .getAuth, .getProfile:
+        case .getProfile, .getProfileById:
             return .get
         case .update:
             return .patch
@@ -44,7 +39,7 @@ extension UserEndpoint {
         switch self {
         case let .update(id, _):
             return [URLQueryItem(name: "user_id", value: "eq.\(id))")]
-        case let .getProfile(id):
+        case let .getProfileById(id):
             return [URLQueryItem(name: "user_id", value: "eq.\(id))")]
         default:
             return nil

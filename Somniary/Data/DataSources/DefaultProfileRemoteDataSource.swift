@@ -15,7 +15,7 @@ struct DefaultProfileRemoteDataSource: ProfileRemoteDataSource, DataSourceSuppor
     }
 
     func fetchProfile() async throws -> NetProfile.Get.Response {
-        let httpResult = await client.request(.getAuth)
+        let httpResult = await client.request(.getProfile)
             .mapError(self.mapTransportError(_:))
         return try decodeHttpResult(httpResult)
     }
