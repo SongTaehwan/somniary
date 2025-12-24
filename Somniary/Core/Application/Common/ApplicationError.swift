@@ -8,9 +8,9 @@
 import Foundation
 
 enum ApplicationError: Error, Equatable {
+    case internalFailure(InternalFailure)
     case dependencyFailure(DependencyFailure)
-    case cancelled
-    case unexpected
+
+    /// 미정의 오류
+    case uncategorized(String?)
 }
-
-
