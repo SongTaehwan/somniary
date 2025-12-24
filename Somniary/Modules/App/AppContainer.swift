@@ -10,8 +10,16 @@ import Foundation
 final class AppContainer: AppCoordinatorDependency {
     static let shared = AppContainer()
 
+    // Data Source
     private let authDataSource = DefaultRemoteAuthDataSource(client: NetworkClientProvider.authNetworkClient)
-    private lazy var repository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
+    private let profileRemoteDataSource = DefaultProfileRemoteDataSource(client: NetworkClientProvider.userNetworkClient)
+
+    // Repository
+    private lazy var profileRepository = DefaultRemoteProfileRepository(remote: self.profileRemoteDataSource, local: DefaultProfileLocalDataSource())
+
+    // usecase
+    private lazy var getProfileUseCase = GetCurrentProfileUseCase(repository: self.profileRepository)
+
 
     func makeAppCoordinator() -> AppCoordinator {
         return AppCoordinator(container: self)
@@ -50,8 +58,9 @@ extension AppContainer: LoginCoordinatorDependency {
     @MainActor func makeLoginViewModel(_ coordinator: (any FlowCoordinator<LoginRoute>)?) -> LoginViewModel {
         let flow = coordinator ?? LoginCoordinator(dependency: self)
         let reducerEnv = LoginReducerEnvironment { UUID() }
-        let flowEnv = LoginEnvironment(auth: repository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
-        let executor = LoginExecutor(dataSource: repository, tokenRepository: TokenRepository.shared)
+        let authRepository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
+        let flowEnv = LoginEnvironment(auth: authRepository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
+        let executor = LoginExecutor(dataSource: authRepository, tokenRepository: TokenRepository.shared)
         return LoginViewModel(coordinator: flow, environment: flowEnv, executor: executor)
     }
 }
@@ -60,8 +69,15 @@ extension AppContainer: LoginCoordinatorDependency {
 extension AppContainer: SettingCoordinatorDependency {
     @MainActor func makeSettingViewModel(_ coordinator: (any FlowCoordinator<SettingRoute>)?) -> SettingViewModel {
         let flow = coordinator ?? SettingCoordinator(dependency: self)
-        let logoutUsecase = LogoutUseCase(authRepository: self.repository)
-        let executor = SettingExecutor(logoutUseCase: logoutUsecase)
+        let authRepository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
+        let logoutUsecase = LogoutUseCase(authRepository: authRepository)
+
+        let executor = SettingExecutor(
+            logoutUseCase: logoutUsecase,
+            getProfileUseCase: getProfileUseCase,
+            observeProfileUseCase: ObserveCurrentProfileUseCase(repository: self.profileRepository),
+            updateProfileUseCase: UpdateCurrentProfileUseCase(repository: self.profileRepository)
+        )
         return SettingViewModel(coordinator: flow, executor: executor)
     }
 }

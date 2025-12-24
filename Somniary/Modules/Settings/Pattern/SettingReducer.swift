@@ -47,9 +47,17 @@ fileprivate func reduceUserIntent(
             .logEvent("End logout")
         ])
     case .profileEditConfirmTapped:
+        guard let profile = state.profile else {
+            var newState = state
+            newState.errorMessage = "프로필 정보를 찾을 수 없습니다."
+            return (state, [
+                .logEvent("profile is nil in state")
+            ])
+        }
+
         return (state, [
             .logEvent("Start updating profile"),
-            .make(.updateProfile),
+            .make(.updateProfile(id: profile.id, name: profile.name, email: profile.email)),
             .logEvent("End updating profile")
         ])
     }

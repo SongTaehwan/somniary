@@ -9,28 +9,49 @@ import Foundation
 
 final class SettingExecutor: EffectExecuting {
     private let logoutUseCase: LogoutUseCase
+    private let getProfileUseCase: GetCurrentProfileUseCase
+    private let observeProfileUseCase: ObserveCurrentProfileUseCase
+    private let updateProfileUseCase: UpdateCurrentProfileUseCase
 
-    init(logoutUseCase: LogoutUseCase) {
+    init(logoutUseCase: LogoutUseCase, getProfileUseCase: GetCurrentProfileUseCase, observeProfileUseCase: ObserveCurrentProfileUseCase, updateProfileUseCase: UpdateCurrentProfileUseCase) {
         self.logoutUseCase = logoutUseCase
+        self.getProfileUseCase = getProfileUseCase
+        self.observeProfileUseCase = observeProfileUseCase
+        self.updateProfileUseCase = updateProfileUseCase
     }
 
     func perform(_ plan: SettingEffectPlan, send: @escaping (SettingIntent) -> Void) {
         switch plan.type {
-        case .updateProfile:
-            // TODO: Start usecase
-            send(.systemInternal(.profileUpdateResponse))
-            break
+        case let .updateProfile(id, name, email):
+            Task {
+                let result = await Result.catching {
+                    try await updateProfileUseCase.execute(.init(id: id, name: name, email: email))
+                } mapError: { error in
+                    error
+                }
+
+                print("RESULT: \(result)")
+
+                send(.systemInternal(.profileUpdateResponse))
+            }
         case .getProfile:
-            // TODO: Start usecase
-            send(.systemInternal(.profileResponse))
-            break
+            Task {
+                let result = await Result.catching {
+                    try await getProfileUseCase.execute()
+                } mapError: { error in
+                    error
+                }
+
+                print("RESULT: \(result)")
+
+                send(.systemInternal(.profileResponse))
+            }
         case .logout:
             handleLogout { result in
                 send(.systemInternal(.logoutResponse(result)))
             }
         case .logEvent(let message):
             print(message)
-            break
         default:
             break
         }

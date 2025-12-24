@@ -17,7 +17,7 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
 
     func request(_ endpoint: Target) async -> Result<HTTPResponse, TransportError> {
         #if DEBUG
-        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path) \(String(describing: endpoint.headers))")
+        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path) \(String(describing: endpoint.headers!.filter({ !$0.value.isEmpty }).keys))")
         #endif
 
         guard let request = try? endpoint.asURLRequest() else {
@@ -44,6 +44,16 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
         let headers = httpResponse.allHeaderFields as? [String: String] ?? [:]
         let status = httpResponse.statusCode
         let body = dataResponse.data
+
+        #if DEBUG
+        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path)")
+        print("Status: \(status)")
+        if let body {
+            print("Response Body: \(String(data: body, encoding: .utf8) ?? "non-utf8 body, bytes=\(body.count)")")
+        } else {
+            print("Response Body: Empty")
+        }
+        #endif
 
         return .success(HTTPResponse(url: url, headers: headers, status: status, body: body))
     }

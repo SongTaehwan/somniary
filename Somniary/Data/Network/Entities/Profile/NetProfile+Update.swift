@@ -12,8 +12,8 @@ extension NetProfile {
 
     enum Update {
         struct Request: Encodable {
-            var name: String?
-            var email: String?
+            let name: String?
+            let email: String?
         }
     }
 }

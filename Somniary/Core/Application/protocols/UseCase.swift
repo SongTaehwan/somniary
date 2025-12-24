@@ -12,7 +12,7 @@ protocol UseCase {
     associatedtype Output
 
     func execute() async throws -> Output
-    func execute(_ input: Input) async throws -> Output
+    func execute(_: Input) async throws -> Output
 }
 
 extension UseCase {
