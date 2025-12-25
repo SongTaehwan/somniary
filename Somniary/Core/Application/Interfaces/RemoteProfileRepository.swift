@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 struct UpdateProfileCommand: Equatable {
     let id: String
@@ -15,15 +14,11 @@ struct UpdateProfileCommand: Equatable {
 }
 
 protocol RemoteProfileRepository {
-    // 여러 ViewModel 에서 구독할 공유 스트림
-    var currentProfile: AnyPublisher<UserProfile?, Never> { get }
-
     // 1회성 조회
-    func getCurrentProfile(policy: FetchPolicy) async throws -> UserProfile?
+    func getCurrentProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileFailureCause>>
 
-    // TODO: Request Model
     // API 를 통한 변경
-    func updateProfile(_ command: UpdateProfileCommand) async throws -> UserProfile
+    func updateProfile(_ command: UpdateProfileCommand) async -> Result<UserProfile, PortFailure<ProfileFailureCause>>
 
     // TODO: 제거할지?
     // 로컬에 업데이트 결과 즉시 반영
