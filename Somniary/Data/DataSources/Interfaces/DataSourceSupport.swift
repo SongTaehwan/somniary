@@ -50,7 +50,7 @@ extension DataSourceSupport {
         case 403:
             return .forbidden
         case 404:
-            return .notFound
+            return .resourceNotFound
         case 409:
             return .conflict
         case 400, 422, 400...499:

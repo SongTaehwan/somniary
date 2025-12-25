@@ -7,20 +7,34 @@
 
 import Foundation
 
+/// HTTP 에러에 대한 해석
 enum RemoteDataSourceError: Error, Equatable {
-    // http 상태 코드 관련 에러
-    /// 인증 실패 (401)
+    /// 토큰 만료
+    case tokenExpired
+    /// 유효하지 않은 토큰
+    case invalidToken
+    // 인증 필요
     case unauthorized
-    /// 권한 없음 (403)
+    /// 권한 없음
     case forbidden
     /// 리소스를 찾을 수 없음 (404)
-    case notFound
+    case resourceNotFound
+    /// 리소스가 1개 이상이거나 없음
+    case resouceNotSingular
     /// 데이터 충돌 (409)
     case conflict
     /// 잘못된 요청 (400, 422 등 기타 4xx)
     case invalidRequest
     /// 서버 에러 (5xx)
     case serverError
+    /// PostgREST error
+    case dbError
+    /// HTTP 메서드가 허용되지 않음 (405)
+    case methodNotAllowed
+    /// 요청한 미디어 타입을 지원하지 않음 (415)
+    case unsupportedMediaType
+    /// 요청한 범위를 만족할 수 없음 (416)
+    case rangeNotSatisfiable
 
     // 요청 데이터 관련 에러
     case requestBuildFailed

@@ -19,9 +19,16 @@ enum AuthErrorDescriptor: ErrorDescriptor {
     case networkUnavailable
     /// 서버 오류
     case serverError
+
+    /// 서비스 이용 불가 - 시스템/애플리케이션 레벨 실패
+    /// 도메인 에러로 해석이 불가능한 경우 예를 들면, DB 에러
+    case serviceUnavailable
+
+    case missingRequiredEntity
+
     /// 클라이언트 버그 (앱 코드 문제)
     case systemError(reason: String)
-    case serviceUnavailable
+
     case unexpected
     case unknown
 
@@ -43,6 +50,8 @@ enum AuthErrorDescriptor: ErrorDescriptor {
             return "알 수 없는 오류가 발생했습니다."
         case .serviceUnavailable:
             return "현재는 사용이 불가능한 서비스입니다."
+        case .missingRequiredEntity:
+            return "없음"
         }
     }
 

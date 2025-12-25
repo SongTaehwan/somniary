@@ -72,7 +72,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         }
 
         switch datasourceError {
-        case .unauthorized, .forbidden:
+        case .unauthorized, .forbidden, .tokenExpired, .invalidToken:
             // 인증 필요
             return AuthError(category: .authenticationRequired)
         case .conflict:
@@ -120,7 +120,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
                 category: .systemError(reason: "인코딩 실패"),
                 message: "Encoding failed - check request model definition"
             )
-        case .requestBuildFailed:
+        case .requestBuildFailed, .methodNotAllowed, .unsupportedMediaType:
             DebugAssert.fail(
                 category: .network,
                 "Request build failed - check endpoint configuration"
@@ -143,7 +143,22 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
                 category: .unknown,
                 message: "Unknown error - check network configuration"
             )
-        case .unexpected, .notFound:
+        case .resouceNotSingular, .resourceNotFound:
+            return AuthError(
+                category: .missingRequiredEntity,
+                message: "Required Resource Not Found: \(datasourceError.localizedDescription)"
+            )
+        case .dbError:
+            return AuthError(
+                category: .serviceUnavailable,
+                message: "DB Error: \(datasourceError.localizedDescription)"
+            )
+        case .rangeNotSatisfiable:
+            return AuthError(
+                category: .serviceUnavailable,
+                message: "DB Error: \(datasourceError.localizedDescription)"
+            )
+        case .unexpected:
             DebugAssert.fail(
                 category: .network,
                 "Unexpected error - fatal error"
