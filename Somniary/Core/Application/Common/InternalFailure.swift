@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// 앱 내부 실행, 환경 문제로 인한 유스케이스의 실패
+/// - 권한, 인코딩, 디코딩, 타임아웃, 취소, 로직 오류 등
 enum InternalFailure: Error, Equatable {
     enum CancelledOperation: Equatable {
         case network

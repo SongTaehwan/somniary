@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// 유스케이스 실행 과정에서 발생하는 비도메인 실패를 DependencyFailure(의존성) 와 InternalFailure(로직) 로 분류해 표현한 에러
 enum ApplicationError: Error, Equatable {
     case internalFailure(InternalFailure)
     case dependencyFailure(DependencyFailure)

@@ -8,6 +8,8 @@
 
 import Foundation
 
+/// 외부 의존성 때문에 유스케이스를 수행하지 못한 실패
+/// - DB, 네트워크, 외부 API 등
 enum DependencyFailure: Equatable {
     enum Dependency: Equatable {
         enum ExternalService {
