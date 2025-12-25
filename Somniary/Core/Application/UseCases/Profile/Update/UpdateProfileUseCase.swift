@@ -29,6 +29,8 @@ struct UpdateProfileUseCase {
                 return mapToUseCaseError(cause)
             }
         }
+
+        return result
     }
 
     private func mapToUseCaseError(_ failureCause: ProfileFailureCause) -> UpdateProfileUseCaseError {
