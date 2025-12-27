@@ -15,12 +15,12 @@ struct UpdateProfileCommand: Equatable {
 
 protocol RemoteProfileRepository {
     // 1회성 조회
-    func getCurrentProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileFailureCause>>
+    func getProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileFailureCause>>
 
     // API 를 통한 변경
     func updateProfile(_ command: UpdateProfileCommand) async -> Result<UserProfile, PortFailure<ProfileFailureCause>>
 
     // TODO: 제거할지?
     // 로컬에 업데이트 결과 즉시 반영
-    func setCurrentProfile(_ profile: UserProfile?) async
+    func setProfile(_ profile: UserProfile?) async
 }

@@ -48,7 +48,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
     }
 
     // 사용자 프로필 정보 조회
-    func getCurrentProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileFailureCause>> {
+    func getProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileFailureCause>> {
         switch policy {
         case .cacheFirst:
             if let cache = getCachedOrLocal() {
@@ -78,7 +78,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
         return result
     }
 
-    func setCurrentProfile(_ profile: UserProfile?) async {
+    func setProfile(_ profile: UserProfile?) async {
         setInMemoryCached(profile, savedAt: profile == nil ? nil : Date())
 
         do {
@@ -185,6 +185,10 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
 
     // TODO: Domain error mapping
     private func mapToDomainError(_ error: Error) -> PortFailure<ProfileFailureCause> {
-        fatalError("Implement required")
+        guard let datasourceError = error as? DataSourceError else {
+            return .application(.internalFailure(.internalError(error.localizedDescription)))
+        }
+
+        fatalError()
     }
 }

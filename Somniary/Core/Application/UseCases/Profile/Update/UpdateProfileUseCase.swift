@@ -46,8 +46,6 @@ struct UpdateProfileUseCase {
 
     private func classifyAuthError(_ error: AuthDomainError) -> UpdateProfileUseCaseError.Classification {
         switch error {
-        case .loginRequired:
-            return .contract(.precondition(.loginRequired))
         default:
             return .outOfContract
         }

@@ -15,7 +15,7 @@ struct GetProfileUseCase: UseCase {
     }
 
     func execute(_ policy: FetchPolicy = .remoteIfStale) async -> Result<UserProfile, GetProfileUseCaseError> {
-        let profileResult = await repository.getCurrentProfile(policy: policy)
+        let profileResult = await repository.getProfile(policy: policy)
             .mapError { portFailure -> GetProfileUseCaseError in
                 switch portFailure {
                 case .application(let appError):
@@ -41,8 +41,6 @@ struct GetProfileUseCase: UseCase {
 
     private func classifyAuthError(_ error: AuthDomainError) -> GetProfileUseCaseError.Classification {
         switch error {
-        case .loginRequired:
-            return .contract(.precondition(.loginRequired))
         default:
             return .outOfContract
         }
