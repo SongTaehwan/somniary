@@ -9,10 +9,20 @@ import Foundation
 
 /// [check] 호출하는 서버 규약에 따라 개별적인 매핑 로직이 필요
 protocol DataSourceSupport {
+    func handleTransportResult(_ result: Result<HTTPResponse, TransportError>) -> Result<Void, DataSourceError>
     func handleTransportResult<T: Decodable>(_ result: Result<HTTPResponse, TransportError>) -> Result<T, DataSourceError>
 }
 
 extension DataSourceSupport {
+    func handleTransportResult(_ result: Result<HTTPResponse, TransportError>) -> Result<Void, DataSourceError> {
+        switch result {
+        case .failure(let transportError):
+            return .failure(mapTransportError(transportError))
+        case .success:
+            return .success(Void())
+        }
+    }
+
     func handleTransportResult<T: Decodable>(_ result: Result<HTTPResponse, TransportError>) -> Result<T, DataSourceError> {
         switch result {
         case .failure(let transportError):
@@ -230,8 +240,8 @@ extension DataSourceSupport {
         switch code {
         case .customStatus(let status):
             return mapHTTPStatusToError(status)
-        case .unknown:
-            return .unknown
+        case .unknown(let reason):
+            return DataSourceError.invariantViolation(reason: reason)
         default:
             DebugAssert.fail(category: .network, severity: .critical, dto.deubgMessage)
             return DataSourceError.invariantViolation(reason: "failed to handle Error Code: \(code)")
@@ -243,7 +253,7 @@ extension DataSourceSupport {
     private func mapHTTPStatusToError(_ status: Int) -> DataSourceError {
         switch status {
         case 401: return .unauthorized(.unauthorized)
-        case 403: return .forbidden(nil)
+        case 403: return .forbidden(.forbidden)
         case 404: return .resource(.notFound)
         case 405: return .client(.methodNotAllowed)
         case 409: return .resource(.conflict)
@@ -264,7 +274,7 @@ extension DataSourceSupport {
             }
 
             DebugAssert.fail(category: .network, "Unhandled status code: \(status)")
-            return .unknown
+            return .invariantViolation(reason: "Unhandled status code: \(status)")
         }
     }
 

@@ -14,7 +14,7 @@ enum DataSourceError: Error, Equatable {
 
     // Auth (보통 401/403)
     case unauthorized(UnauthorizedReason)   // 401
-    case forbidden(ForbiddenReason?)        // 403
+    case forbidden(ForbiddenReason)        // 403
 
     // Resource / State (주로 404/409 + “싱귤러 기대 위반” 같은 데이터 상태)
     case resource(ResourceReason)
@@ -29,7 +29,6 @@ enum DataSourceError: Error, Equatable {
     case response(ResponseReason)
 
     // Fallbacks
-    case unknown
     case invariantViolation(reason: String)    // (기존 unexpected 같은 “여기 오면 버그”)
 }
 
