@@ -23,7 +23,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         do {
             try await self.dataSource.requestOtpCode(payload: .init(email: email, createUser: createUser), idempotencyKey: nil)
             return VoidResponse()
-        } catch let error as RemoteDataSourceError {
+        } catch let error as DataSourceError {
             throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
@@ -35,7 +35,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         do {
             let dto = try await self.dataSource.verify(payload: .init(email: email, token: otpCode), idempotencyKey: nil)
             return TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
-        } catch let error as RemoteDataSourceError {
+        } catch let error as DataSourceError {
             throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
@@ -47,7 +47,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         do {
             let dto = try await self.dataSource.verify(payload: .init(idToken: credential.identityToken, nonce: credential.nonce), idempotencyKey: nil)
             return TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
-        } catch let error as RemoteDataSourceError {
+        } catch let error as DataSourceError {
             throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
@@ -58,7 +58,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
     func logout() async throws {
         do {
             try await self.dataSource.logout()
-        } catch let error as RemoteDataSourceError {
+        } catch let error as DataSourceError {
             throw mapToDomainAuthError(error)
         } catch {
             DebugAssert.fail(category: .network, "Unexpected error: \(error)")
@@ -67,7 +67,7 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
     }
 
     private func  mapToDomainAuthError(_ error: Error) -> AuthError {
-        guard let datasourceError = error as? RemoteDataSourceError else {
+        guard let datasourceError = error as? DataSourceError else {
             return AuthError(category: .unexpected)
         }
 
