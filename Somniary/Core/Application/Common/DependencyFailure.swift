@@ -40,6 +40,8 @@ enum DependencyFailure: Equatable {
         ///
         /// 인증 상태 변화/정책 거절은 도메인 에러에서 정의
         case refreshToken
+
+        case unknown
     }
 
     enum Certainty: Equatable {
@@ -56,10 +58,13 @@ enum DependencyFailure: Equatable {
         case partiallySucceeded
     }
 
+    /// 의존성 호출 실패/가용성 문제
+    /// - 네트워크 불가/타임아웃/DNS/TLS
+    /// - 서버 장애
     case unavailable(
         dependency: Dependency,
-        operation: Operation,
-        retriable: Bool,
+        operation: Operation = .unknown,
+        retriable: Bool = false,
         certainty: Certainty,
         attempts: Int? = nil,
         /// HTTP 상태 코드, 응답 못 받으면 nil
@@ -79,4 +84,19 @@ enum DependencyFailure: Equatable {
         correlationId: String? = nil,
         causeCode: String? = nil
     )
+
+    /// 응답 계약 위반
+    case contractViolation(
+        dependency: Dependency,
+        operation: Operation,
+        lastStatus: Int? = nil,
+        /// 앱에서 생성한 ID (UseCase 단위 UUID)
+        clientCorrelationId: String? = nil,
+        /// 서버 응답으로 받은 Trace/Request ID
+        serverCorrelationId: String? = nil,
+        causeCode: String? = nil
+    )
+
+    /// 응답 계약 밖
+    case badResponse(String)
 }
