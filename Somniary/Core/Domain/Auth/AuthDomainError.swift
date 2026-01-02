@@ -42,6 +42,9 @@ enum AuthDomainError: Error, Equatable {
 
         // 환경/클라이언트 문제
         case clientMisconfigured
+
+        // 원인 불명 401
+        case unknownUnauthorized
     }
 
     enum PermissionDeniedReason: Error, Equatable {
@@ -64,6 +67,8 @@ enum AuthDomainError: Error, Equatable {
         /// - 내가 소유하지 않은 데이터 수정 시도
         /// - 민감한 데이터 접근 차단(법적/보안)
         case resourceForbidden
+
+        case unknownForbidden
     }
 
     enum AccountRestrictedReason: Error, Equatable {
@@ -144,6 +149,8 @@ extension AuthDomainError {
         case .clientMisconfigured:
             // 앱 환경 문제
             return .contactSupport(message: .clientMisconfigured)
+        case .unknownUnauthorized:
+            return .reauth(action: .forceLogout, message: .sessionInvalid)
         }
     }
 

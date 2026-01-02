@@ -92,6 +92,7 @@ extension DataSourceSupport {
                 // 504
                 return .server(.gatewayTimeout)
             default:
+                /// 내부 로직 오류로 누락된 것으로 간주
                 return .invariantViolation(reason: "Unhandled Connectin Error Code: \(code)")
             }
         }

@@ -28,8 +28,10 @@ enum DataSourceError: Error, Equatable {
     // Response handling (바디/디코딩/스키마)
     case response(ResponseReason)
 
-    // Fallbacks
-    case invariantViolation(reason: String)    // (기존 unexpected 같은 “여기 오면 버그”)
+    /// 절대 안 일어난다고 가정
+    /// - 외부 의존성 문제가 아니라 내부 구현/불변식 위반으로 간주
+    /// - ApplicationError.internalFailure 에 해당
+    case invariantViolation(reason: String)
 }
 
 // MARK: - Unauthorized (401)
