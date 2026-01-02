@@ -7,17 +7,17 @@
 
 import Foundation
 
-struct LogoutUseCase: UseCase {
+struct LogoutUseCase {
     typealias Input = Void
 
-    private let authRepository: RemoteAuthRepository
+    private let repository: RemoteAuthRepository
 
     init(authRepository: RemoteAuthRepository) {
-        self.authRepository = authRepository
+        self.repository = authRepository
     }
 
-    func execute() async throws -> VoidResponse {
-        try await self.authRepository.logout()
+    func execute() async -> VoidResponse {
+        await repository.logout()
         TokenRepository.shared.clear()
         return VoidResponse()
     }

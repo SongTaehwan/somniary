@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct AppleLoginUseCase: UseCase {
+struct AppleLoginUseCase {
     private let repository: RemoteAuthRepository
 
     init(repository: RemoteAuthRepository) {
         self.repository = repository
     }
 
-    func execute(_ input: AppleCredential) async throws -> TokenEntity {
+    func execute(_ input: AppleCredential) async -> Result<VoidResponse, EmailLoginUseCaseError> {
         fatalError("Implement Required")
     }
 }
