@@ -60,7 +60,7 @@ extension AppContainer: LoginCoordinatorDependency {
         let reducerEnv = LoginReducerEnvironment { UUID() }
         let authRepository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
         let flowEnv = LoginEnvironment(auth: authRepository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
-        let executor = LoginExecutor(dataSource: authRepository, tokenRepository: TokenRepository.shared)
+        let executor = LoginExecutor(loginUseCase: .init(repository: authRepository), emailUseCase: .init(repository: authRepository))
         return LoginViewModel(coordinator: flow, environment: flowEnv, executor: executor)
     }
 }

@@ -20,7 +20,6 @@ struct LoginEffectPlan: EffectPlan {
 
         /// side effect
         case logEvent(String)
-        case storeToken(TokenEntity)
 
         /// one-off UI outputs, ViewModel 에 의해 처리됨
         case showToast(String)
@@ -146,10 +145,6 @@ extension LoginEffectPlan {
 
     static func updateTextField(email: String? = nil, otpCode: String? = nil) -> Self {
         return .make(.updateTextField(email: email, otpCode: otpCode))
-    }
-
-    static func storeToken(_ token: TokenEntity) -> Self {
-        return .make(.storeToken(token))
     }
 
     static func authenticateWithApple(

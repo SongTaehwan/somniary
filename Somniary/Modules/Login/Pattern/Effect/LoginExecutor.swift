@@ -12,12 +12,12 @@ final class LoginExecutor: EffectExecuting {
     typealias Intent = LoginIntent
 
     private var tasks: [UUID: Task<Void, Never>] = [:]
-    private let authRepository: RemoteAuthRepository
-    private let tokenRepository: any TokenReposable<TokenEntity>
+    private let loginUseCase: LoginUseCase
+    private let emailUseCase: RequestOtpUseCase
 
-    init(dataSource: RemoteAuthRepository, tokenRepository: any TokenReposable<TokenEntity>) {
-        self.authRepository = dataSource
-        self.tokenRepository = tokenRepository
+    init(loginUseCase: LoginUseCase, emailUseCase: RequestOtpUseCase) {
+        self.loginUseCase = loginUseCase
+        self.emailUseCase = emailUseCase
     }
 
     func perform(_ plan: Plan, send: @escaping (Intent) -> Void) {
@@ -30,11 +30,7 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result: Result<VoidResponse, AuthError> = await Result.catching {
-                    try await authRepository.requestOtpCode(email: email, createUser: false, idempotencyKey: nil)
-                } mapError: {
-                    $0 as? AuthError ?? AuthError.unknown()
-                }
+                let result = await emailUseCase.execute(.init(email: email))
 
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.loginResponse(result))) }
@@ -47,11 +43,7 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result: Result<VoidResponse, AuthError> = await Result.catching {
-                    try await authRepository.requestOtpCode(email: email, createUser: true, idempotencyKey: nil)
-                } mapError: {
-                    $0 as? AuthError ?? AuthError.unknown()
-                }
+                let result = await emailUseCase.execute(.init(email: email))
 
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.signupResponse(result))) }
@@ -63,11 +55,7 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result: Result<TokenEntity, AuthError> = await Result.catching {
-                    try await authRepository.verify(email: email, otpCode: otpCode, idempotencyKey: nil)
-                } mapError: {
-                    $0 as? AuthError ?? AuthError.unknown()
-                }
+                let result = await loginUseCase.execute(.init(email: email, otpCode: otpCode))
 
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.verifyResponse(result))) }
@@ -76,13 +64,6 @@ final class LoginExecutor: EffectExecuting {
         case .logEvent(let message):
             print(message)
 
-        case .storeToken(let token):
-            do {
-                try self.tokenRepository.updateToken(.init(accessToken: token.accessToken, refreshToken: token.refreshToken))
-            } catch {
-                print(error)
-            }
-
         case let .authenticateWithApple(credential, requestId):
             tasks[requestId]?.cancel()
             tasks[requestId] = Task {
@@ -90,11 +71,7 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result: Result<TokenEntity, AuthError> = await Result.catching {
-                    try await authRepository.verify(credential: credential, idempotencyKey: nil)
-                } mapError: {
-                    $0 as? AuthError ?? AuthError.unknown()
-                }
+                let result = await loginUseCase.execute(credential)
 
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.verifyResponse(result))) }
