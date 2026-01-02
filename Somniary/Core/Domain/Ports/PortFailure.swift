@@ -12,5 +12,5 @@ import Foundation
 /// "필요성: 이 함수가 어떤 에러를 던질 수 있는지" 가 컴파일 타임에 드러나지 않아 (계약이 약해짐)
 enum PortFailure<Domain: Error & Equatable>: Error, Equatable {
     case domain(Domain)
-    case application(ApplicationError)
+    case system(SystemFailure)
 }
