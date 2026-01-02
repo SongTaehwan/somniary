@@ -7,6 +7,9 @@
 
 import Foundation
 
+// TODO: 현재 인증과 회원가입을 모두 하고 있기 떄문에 AuthDomainError 에도 2가지 역할을 기대하고 있다.
+// 별도의 두 역할 각각에 해당하는 Domain 에러를 정의하고 에러 타입으로 채택해서 UseCase 에서 매핑한다.
+
 /// 역할: Data 레이어 계층 모델을 Domain 모델로 변환
 /// '데이터 접근을 조율'하고, 복잡한 변환은 위임하고 간단한 작업은 직접 처리하여 Domain Entity 제공
 ///
@@ -19,155 +22,106 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         self.dataSource = dataSource
     }
 
-    func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async throws -> VoidResponse {
-        do {
-            try await self.dataSource.requestOtpCode(payload: .init(email: email, createUser: createUser), idempotencyKey: nil)
-            return VoidResponse()
-        } catch let error as DataSourceError {
-            throw mapToDomainAuthError(error)
-        } catch {
-            DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthError.unexpected(snapshot: .init(from: error))
-        }
+    /// OTP 코드 이메일 전송
+    func requestOtpCode(email: String, createUser: Bool, idempotencyKey: String?) async -> Result<Void, PortFailure<IdentityBoundaryError>> {
+        let result = await self.dataSource.requestOtpCode(payload: .init(email: email, createUser: createUser), idempotencyKey: nil)
+            .mapError(mapToDomainError(_:))
+
+        return result
     }
 
-    func verify(email: String, otpCode: String, idempotencyKey: String?) async throws -> TokenEntity {
-        do {
-            let dto = try await self.dataSource.verify(payload: .init(email: email, token: otpCode), idempotencyKey: nil)
-            return TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
-        } catch let error as DataSourceError {
-            throw mapToDomainAuthError(error)
-        } catch {
-            DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthError.unexpected(snapshot: .init(from: error))
-        }
+    /// 인증 토큰 발급
+    func verify(email: String, otpCode: String, idempotencyKey: String?) async -> Result<TokenEntity, PortFailure<IdentityBoundaryError>> {
+        let result = await self.dataSource.verify(payload: .init(email: email, token: otpCode), idempotencyKey: nil)
+            .mapError(mapToDomainError(_:))
+            .map { dto in
+                TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
+            }
+
+        return result
     }
 
-    func verify(credential: AppleCredential, idempotencyKey: String?) async throws -> TokenEntity {
-        do {
-            let dto = try await self.dataSource.verify(payload: .init(idToken: credential.identityToken, nonce: credential.nonce), idempotencyKey: nil)
-            return TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
-        } catch let error as DataSourceError {
-            throw mapToDomainAuthError(error)
-        } catch {
-            DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthError.unexpected(snapshot: .init(from: error))
-        }
+    /// 인증 토큰 발급
+    func verify(credential: AppleCredential, idempotencyKey: String?) async -> Result<TokenEntity, PortFailure<IdentityBoundaryError>> {
+        let result = await self.dataSource.verify(payload: .init(idToken: credential.identityToken, nonce: credential.nonce), idempotencyKey: nil)
+            .mapError(mapToDomainError(_:))
+            .map { dto in
+                TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
+            }
+
+        return result
     }
 
-    func logout() async throws {
-        do {
-            try await self.dataSource.logout()
-        } catch let error as DataSourceError {
-            throw mapToDomainAuthError(error)
-        } catch {
-            DebugAssert.fail(category: .network, "Unexpected error: \(error)")
-            throw AuthError.unexpected(snapshot: .init(from: error))
-        }
+    func logout() async -> Result<Void, PortFailure<IdentityBoundaryError>> {
+        let result = await self.dataSource.logout()
+            .mapError(mapToDomainError(_:))
+
+        return result
     }
 
-    private func  mapToDomainAuthError(_ error: Error) -> AuthError {
+    private func mapToDomainError(_ error: Error) -> PortFailure<IdentityBoundaryError> {
         guard let datasourceError = error as? DataSourceError else {
-            return AuthError(category: .unexpected)
+            return .system(.internalInvariantViolation(reason: "Unhandled error: \(error)"))
         }
 
         switch datasourceError {
-        case .unauthorized, .forbidden, .tokenExpired, .invalidToken:
-            // 인증 필요
-            return AuthError(category: .authenticationRequired)
-        case .conflict:
-            return AuthError(category: .resourceAlreadyExists)
-        case .networkUnavailable, .timeout:
-            // 네트워크
-            return AuthError(category: .networkUnavailable)
-        case .serverError:
-            // 서버
-            return AuthError(category: .serverError)
-        case .emptyResponse:
-            // 응답 body가 없음 - 서버 응답 구조 문제
-            DebugAssert.fail(category: .network, "Server returned empty response")
-            return AuthError(
-                category: .serverError,
-                message: "Server returned empty response"
-            )
-        case .invalidRequest:
-            // 클라이언트 버그로 생긴 오류
-            return AuthError(category: .systemError(reason: "네트워크 요청 오류"))
-        case .securityError:
-            // TLS/인증서 문제 - 클라이언트 또는 서버 설정 문제
-            DebugAssert.fail(
-                category: .network,
-                "Security error - check SSL/TLS configuration"
-            )
-            return AuthError(
-                category: .systemError(reason: "보안 오류"),
-                message: "Security error - check SSL/TLS configuration"
-            )
-        case .decodingFailed:
-            DebugAssert.fail(category: .network, "Decoding failed")
-
-            return AuthError(
-                category: .systemError(reason: "디코딩 실패"),
-                message: "Decoding failed"
-            )
-        case .encodingFailed:
-            DebugAssert.fail(
-                category: .network,
-                "Encoding failed - check request model definition"
-            )
-
-            return AuthError(
-                category: .systemError(reason: "인코딩 실패"),
-                message: "Encoding failed - check request model definition"
-            )
-        case .requestBuildFailed, .methodNotAllowed, .unsupportedMediaType:
-            DebugAssert.fail(
-                category: .network,
-                "Request build failed - check endpoint configuration"
-            )
-
-            return AuthError(
-                category: .systemError(reason: "요청 생성 실패"),
-                message: "Request build failed - check endpoint configuration"
-            )
-        case .cancelled:
-            // 요청된 작업 취소
-            return AuthError(category: .operationCancelled)
-        case .unknown:
-            DebugAssert.fail(
-                category: .network,
-                "Unknown error - check network configuration"
-            )
-
-            return AuthError(
-                category: .unknown,
-                message: "Unknown error - check network configuration"
-            )
-        case .resouceNotSingular, .resourceNotFound:
-            return AuthError(
-                category: .missingRequiredEntity,
-                message: "Required Resource Not Found: \(datasourceError.localizedDescription)"
-            )
-        case .dbError:
-            return AuthError(
-                category: .serviceUnavailable,
-                message: "DB Error: \(datasourceError.localizedDescription)"
-            )
-        case .rangeNotSatisfiable:
-            return AuthError(
-                category: .serviceUnavailable,
-                message: "DB Error: \(datasourceError.localizedDescription)"
-            )
-        case .unexpected:
-            DebugAssert.fail(
-                category: .network,
-                "Unexpected error - fatal error"
-            )
-
-            return AuthError(
-                category: .unexpected,
-                message: "DSError: \(datasourceError.localizedDescription)"
-            )
+        case .transport(let transportError):
+            switch transportError {
+            case .cancelled:
+                return .system(.dependencyUnavailable(details: "cancelled"))
+            case .network(_), .tls, .unknown:
+                return .system(.dependencyUnavailable(details: "network error"))
+            case .requestBuildFailed:
+                return .system(.contractViolation(details: "Failed to build URL request"))
+            }
+        case .unauthorized(let unauthorizedReason):
+            switch unauthorizedReason {
+            case .tokenExpired:
+                return .domain(.auth(.authRequired(reason: .accessTokenExpired)))
+            case .invalidToken:
+                return .domain(.auth(.authRequired(reason: .accessTokenInvalid)))
+            case .unauthorized:
+                return .domain(.auth(.authRequired(reason: .unknownUnauthorized)))
+            }
+        case .forbidden(let forbiddenReason):
+            switch forbiddenReason {
+            case .roleDenied:
+                return .domain(.auth(.permissionDenied(reason: .roleDenied)))
+            case .insufficientScope:
+                return .domain(.auth(.permissionDenied(reason: .insufficientScope)))
+            case .resourceForbidden:
+                return .domain(.auth(.permissionDenied(reason: .resourceForbidden)))
+            case .forbidden:
+                return .domain(.auth(.permissionDenied(reason: .unknownForbidden)))
+            }
+        case .resource(let resourceReason):
+            switch resourceReason {
+            case .notSingular:
+                return .system(.contractViolation(details: "Not Singlular"))
+            case .conflict:
+                return .domain(.registration(.alreadyExists(reason: .duplicatedEmail)))
+            case .notFound:
+                // 응답을 기대하는데 없는 경우에 해당
+                return .system(.contractViolation(details: "Not Found"))
+            }
+        case .client(let clientReason):
+            // 요청에 대한 계약 위반으로 간주
+            return .system(.contractViolation(details: "HTTP 4xx: \(clientReason)"))
+        case .server(let serverReason):
+            // 의존성 실패로 간주
+            return .system(.dependencyUnavailable(details: "internal server error: \(serverReason)"))
+        case .response(let responseReason):
+            // 응답에 대한 계약 위반으로 간주
+            switch responseReason {
+            case .emptyResponse:
+                return .system(.contractViolation(details: "Empty Response"))
+            case .invalidPayload:
+                return .system(.contractViolation(details: "Invalid Payload"))
+            case .decodingFailed:
+                return .system(.contractViolation(details: "decodingFailed"))
+            }
+        case .invariantViolation(let reason):
+            return .system(.internalInvariantViolation(reason: reason))
         }
     }
 }

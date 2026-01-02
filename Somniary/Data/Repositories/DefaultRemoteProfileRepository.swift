@@ -22,7 +22,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
     private var savedAt: Date?
 
     // single-flight (동시에 여러 화면이 remoteOnly 호출해도 1번만 요청)
-    private var inflight: Task<Result<UserProfile, PortFailure<ProfileFailureCause>>, Error>?
+    private var inflight: Task<Result<UserProfile, PortFailure<ProfileBoundaryError>>, Error>?
 
     // stale 기준 - 3초
     private let ttl: TimeInterval = 3
@@ -48,7 +48,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
     }
 
     // 사용자 프로필 정보 조회
-    func getProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileFailureCause>> {
+    func getProfile(policy: FetchPolicy) async -> Result<UserProfile, PortFailure<ProfileBoundaryError>> {
         switch policy {
         case .cacheFirst:
             if let cache = getCachedOrLocal() {
@@ -68,7 +68,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
     }
 
     // TODO: write 작업 시에는 어떻게 처리할지? cancel?
-    func updateProfile(_ command: UpdateProfileCommand) async -> Result<UserProfile, PortFailure<ProfileFailureCause>> {
+    func updateProfile(_ command: UpdateProfileCommand) async -> Result<UserProfile, PortFailure<ProfileBoundaryError>> {
         let result = await remote.updateProfile(id: command.id, payload: .init(name: command.name, email: command.email))
             .mapError(mapToDomainError(_:))
             .map { dto in
@@ -109,7 +109,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
         return nil
     }
 
-    private func ensureSingleFlight(create: @escaping () -> Task<Result<UserProfile, PortFailure<ProfileFailureCause>>, Error>) -> Task<Result<UserProfile, PortFailure<ProfileFailureCause>>, Error> {
+    private func ensureSingleFlight(create: @escaping () -> Task<Result<UserProfile, PortFailure<ProfileBoundaryError>>, Error>) -> Task<Result<UserProfile, PortFailure<ProfileBoundaryError>>, Error> {
         // 1) 이미 진행 중이면 해당 Task를 await
         if let existing = lock.withLock({ inflight }) {
             return existing
@@ -130,7 +130,7 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
         }
     }
 
-    private func refreshRemoteSingleFlight() async -> Result<UserProfile, PortFailure<ProfileFailureCause>> {
+    private func refreshRemoteSingleFlight() async -> Result<UserProfile, PortFailure<ProfileBoundaryError>> {
         let task = ensureSingleFlight {
             Task { [weak self] in
                 guard let self else {
@@ -166,15 +166,15 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
         }
     }
 
-    private func handleTask<T>(_ task: Task<Result<T, PortFailure<ProfileFailureCause>>, any Error>) async -> Result<T, PortFailure<ProfileFailureCause>> {
-        return await Result<T, PortFailure<ProfileFailureCause>>.catching {
+    private func handleTask<T>(_ task: Task<Result<T, PortFailure<ProfileBoundaryError>>, any Error>) async -> Result<T, PortFailure<ProfileBoundaryError>> {
+        return await Result<T, PortFailure<ProfileBoundaryError>>.catching {
             try await task.value.get()
         } mapError: { error in
             if let _ = error as? CancellationError {
-                return .application(.internalFailure(.cancelled(.task)))
+                return .system(.dependencyUnavailable(details: "cancelled"))
             }
 
-            return .application(.internalFailure(.internalError("Task.value failed: \(error.localizedDescription)")))
+            return .system(.dependencyUnavailable(details: "Task.value failed: \(error.localizedDescription)"))
         }
     }
 
@@ -184,9 +184,9 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
     }
 
     // TODO: Domain error mapping
-    private func mapToDomainError(_ error: Error) -> PortFailure<ProfileFailureCause> {
+    private func mapToDomainError(_ error: Error) -> PortFailure<ProfileBoundaryError> {
         guard let datasourceError = error as? DataSourceError else {
-            return .application(.internalFailure(.internalError(error.localizedDescription)))
+            return .system(.internalInvariantViolation(reason: "Unexpected: \(error.localizedDescription)"))
         }
 
         fatalError()
