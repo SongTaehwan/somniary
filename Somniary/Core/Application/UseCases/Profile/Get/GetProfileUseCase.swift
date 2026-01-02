@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GetProfileUseCase: UseCase {
+struct GetProfileUseCase {
     private let repository: RemoteProfileRepository
 
     init(repository: RemoteProfileRepository) {
