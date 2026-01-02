@@ -12,4 +12,4 @@ enum UpdateProfileConractError: Error, Equatable {
     // TODO: 도메인 에러 정의
 }
 
-typealias UpdateProfileUseCaseError = UseCaseError<UpdateProfileConractError, ProfileFailureCause>
+typealias UpdateProfileUseCaseError = UseCaseError<UpdateProfileConractError, ProfileBoundaryError>

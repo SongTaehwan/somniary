@@ -18,8 +18,8 @@ struct GetProfileUseCase: UseCase {
         let profileResult = await repository.getProfile(policy: policy)
             .mapError { portFailure -> GetProfileUseCaseError in
                 switch portFailure {
-                case .application(let appError):
-                    return .application(appError)
+                case .system(let systemError):
+                    return .system(systemError)
                 case .domain(let failureCause):
                     return mapToUseCaseError(failureCause)
                 }
@@ -28,7 +28,7 @@ struct GetProfileUseCase: UseCase {
         return profileResult
     }
 
-    private func mapToUseCaseError(_ failureCause: ProfileFailureCause) -> GetProfileUseCaseError {
+    private func mapToUseCaseError(_ failureCause: ProfileBoundaryError) -> GetProfileUseCaseError {
         return .from(failureCause: failureCause) { cause in
             switch cause {
             case .auth(let error):

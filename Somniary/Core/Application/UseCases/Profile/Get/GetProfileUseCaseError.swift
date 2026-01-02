@@ -15,4 +15,4 @@ enum GetProfileContractError: Error, Equatable {
     case invalidNickname
 }
 
-typealias GetProfileUseCaseError = UseCaseError<GetProfileContractError, ProfileFailureCause>
+typealias GetProfileUseCaseError = UseCaseError<GetProfileContractError, ProfileBoundaryError>

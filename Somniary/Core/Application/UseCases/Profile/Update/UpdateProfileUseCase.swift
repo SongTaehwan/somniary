@@ -23,8 +23,8 @@ struct UpdateProfileUseCase {
     func execute(_ input: Input) async -> Result<UserProfile, UpdateProfileUseCaseError> {
         let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email)).mapError { failureCause -> UpdateProfileUseCaseError in
             switch failureCause {
-            case .application(let appError):
-                return .application(appError)
+            case .system(let systemError):
+                return .system(systemError)
             case .domain(let cause):
                 return mapToUseCaseError(cause)
             }
@@ -33,7 +33,7 @@ struct UpdateProfileUseCase {
         return result
     }
 
-    private func mapToUseCaseError(_ failureCause: ProfileFailureCause) -> UpdateProfileUseCaseError {
+    private func mapToUseCaseError(_ failureCause: ProfileBoundaryError) -> UpdateProfileUseCaseError {
         return .from(failureCause: failureCause) { cause in
             switch cause {
             case .profile(let domainError):
