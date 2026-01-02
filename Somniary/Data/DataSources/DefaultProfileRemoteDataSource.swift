@@ -14,15 +14,13 @@ struct DefaultProfileRemoteDataSource: ProfileRemoteDataSource, DataSourceSuppor
         self.client = client
     }
 
-    func fetchProfile() async throws -> NetProfile.Get.Response {
+    func fetchProfile() async -> Result<NetProfile.Get.Response, DataSourceError> {
         let httpResult = await client.request(.getProfile)
-            .mapError(self.mapTransportError(_:))
-        return try decodeHttpResult(httpResult)
+        return handleTransportResult(httpResult)
     }
 
-    func updateProfile(id: String, payload: NetProfile.Update.Request) async throws -> NetProfile.Get.Response {
+    func updateProfile(id: String, payload: NetProfile.Update.Request) async -> Result<NetProfile.Get.Response, DataSourceError> {
         let httpResult = await client.request(.update(id: id, payload: payload))
-            .mapError(self.mapTransportError(_:))
-        return try decodeHttpResult(httpResult)
+        return handleTransportResult(httpResult)
     }
 }

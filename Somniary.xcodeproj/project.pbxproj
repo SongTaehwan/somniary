@@ -42,6 +42,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Common/README.md,
+				Core/Application/README.md,
 				Core/Domain/README.md,
 				Core/README.md,
 				Foundation/README.md,

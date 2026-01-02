@@ -195,7 +195,7 @@ fileprivate func reduceInternalIntent(
             newState.requirement = .errorHandling
             newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent(message: "login_failed", errorMessage: error.log),
+//                .logEvent(message: "login_failed", errorMessage: error.log),
                 .toast(error.userMessage)
             ])
         }
@@ -214,7 +214,7 @@ fileprivate func reduceInternalIntent(
             newState.requirement = .errorHandling
             newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent(message: "signup_failed", errorMessage: error.log),
+//                .logEvent(message: "signup_failed", errorMessage: error.log),
                 .toast(error.userMessage)
             ])
         }
@@ -224,7 +224,6 @@ fileprivate func reduceInternalIntent(
         case .success(let token):
             return (newState, [
                 .logEvent("otp_verification_success", level: .debug),
-                .storeToken(token),
                 .logEvent("navigate_home"),
                 .route(.navigateHome)
             ])
@@ -232,7 +231,7 @@ fileprivate func reduceInternalIntent(
         case .failure(let error):
             newState.errorMessage = error.userMessage
             return (newState, [
-                .logEvent(message: "otp_verfication_failed", errorMessage: error.log),
+//                .logEvent(message: "otp_verfication_failed", errorMessage: error.log),
                 .toast(error.userMessage),
             ])
         }

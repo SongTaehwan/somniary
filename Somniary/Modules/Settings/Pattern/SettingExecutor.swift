@@ -9,14 +9,12 @@ import Foundation
 
 final class SettingExecutor: EffectExecuting {
     private let logoutUseCase: LogoutUseCase
-    private let getProfileUseCase: GetCurrentProfileUseCase
-    private let observeProfileUseCase: ObserveCurrentProfileUseCase
-    private let updateProfileUseCase: UpdateCurrentProfileUseCase
+    private let getProfileUseCase: GetProfileUseCase
+    private let updateProfileUseCase: UpdateProfileUseCase
 
-    init(logoutUseCase: LogoutUseCase, getProfileUseCase: GetCurrentProfileUseCase, observeProfileUseCase: ObserveCurrentProfileUseCase, updateProfileUseCase: UpdateCurrentProfileUseCase) {
+    init(logoutUseCase: LogoutUseCase, getProfileUseCase: GetProfileUseCase, updateProfileUseCase: UpdateProfileUseCase) {
         self.logoutUseCase = logoutUseCase
         self.getProfileUseCase = getProfileUseCase
-        self.observeProfileUseCase = observeProfileUseCase
         self.updateProfileUseCase = updateProfileUseCase
     }
 

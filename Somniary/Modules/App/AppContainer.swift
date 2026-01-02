@@ -18,7 +18,7 @@ final class AppContainer: AppCoordinatorDependency {
     private lazy var profileRepository = DefaultRemoteProfileRepository(remote: self.profileRemoteDataSource, local: DefaultProfileLocalDataSource())
 
     // usecase
-    private lazy var getProfileUseCase = GetCurrentProfileUseCase(repository: self.profileRepository)
+    private lazy var getProfileUseCase = GetProfileUseCase(repository: self.profileRepository)
 
 
     func makeAppCoordinator() -> AppCoordinator {
@@ -60,7 +60,7 @@ extension AppContainer: LoginCoordinatorDependency {
         let reducerEnv = LoginReducerEnvironment { UUID() }
         let authRepository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
         let flowEnv = LoginEnvironment(auth: authRepository, reducerEnvironment: reducerEnv, crypto: NonceGenerator.shared)
-        let executor = LoginExecutor(dataSource: authRepository, tokenRepository: TokenRepository.shared)
+        let executor = LoginExecutor(loginUseCase: .init(repository: authRepository), emailUseCase: .init(repository: authRepository))
         return LoginViewModel(coordinator: flow, environment: flowEnv, executor: executor)
     }
 }
@@ -75,8 +75,7 @@ extension AppContainer: SettingCoordinatorDependency {
         let executor = SettingExecutor(
             logoutUseCase: logoutUsecase,
             getProfileUseCase: getProfileUseCase,
-            observeProfileUseCase: ObserveCurrentProfileUseCase(repository: self.profileRepository),
-            updateProfileUseCase: UpdateCurrentProfileUseCase(repository: self.profileRepository)
+            updateProfileUseCase: UpdateProfileUseCase(repository: self.profileRepository)
         )
         return SettingViewModel(coordinator: flow, executor: executor)
     }

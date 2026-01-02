@@ -8,6 +8,6 @@
 import Foundation
 
 protocol ProfileRemoteDataSource {
-    func fetchProfile() async throws -> NetProfile.Get.Response
-    func updateProfile(id: String, payload: NetProfile.Update.Request) async throws -> NetProfile.Get.Response
+    func fetchProfile() async -> Result<NetProfile.Get.Response, DataSourceError>
+    func updateProfile(id: String, payload: NetProfile.Update.Request) async -> Result<NetProfile.Get.Response, DataSourceError>
 }
