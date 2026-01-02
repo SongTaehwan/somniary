@@ -14,7 +14,7 @@ enum UseCaseError<ContractError: Error & Equatable, FailureCause: Error & Equata
     /// 유스케이스 계약/규칙
     case domain(ContractError)
     /// 어플리케이션 레벨 에러
-    case application(ApplicationError)
+    case system(SystemFailure)
     /// 유스케이스 계약 밖이거나 불변식 위반 에러
     case unexpected(UnexpectedFailure<FailureCause>)
 }
