@@ -8,7 +8,7 @@
 import Foundation
 
 /// Profile 도메인 실패 케이스로 발생할 수 있는 에러 총집합
-enum ProfileFailureCause: Error, Equatable {
+enum ProfileBoundaryError: Error, Equatable {
     case profile(ProfileDomainError)
     case auth(AuthDomainError)
 }
