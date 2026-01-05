@@ -12,9 +12,3 @@ enum LoginContractError: Error, Equatable {
 }
 
 typealias LoginUseCaseError = UseCaseError<LoginContractError, IdentityBoundaryError>
-
-extension LoginUseCaseError {
-    var userMessage: String {
-        ""
-    }
-}

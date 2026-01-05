@@ -77,29 +77,29 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         case .unauthorized(let unauthorizedReason):
             switch unauthorizedReason {
             case .tokenExpired:
-                return .domain(.auth(.authRequired(reason: .accessTokenExpired)))
+                return .boundary(.auth(.authRequired(reason: .accessTokenExpired)))
             case .invalidToken:
-                return .domain(.auth(.authRequired(reason: .accessTokenInvalid)))
+                return .boundary(.auth(.authRequired(reason: .accessTokenInvalid)))
             case .unauthorized:
-                return .domain(.auth(.authRequired(reason: .unknownUnauthorized)))
+                return .boundary(.auth(.authRequired(reason: .unknownUnauthorized)))
             }
         case .forbidden(let forbiddenReason):
             switch forbiddenReason {
             case .roleDenied:
-                return .domain(.auth(.permissionDenied(reason: .roleDenied)))
+                return .boundary(.auth(.permissionDenied(reason: .roleDenied)))
             case .insufficientScope:
-                return .domain(.auth(.permissionDenied(reason: .insufficientScope)))
+                return .boundary(.auth(.permissionDenied(reason: .insufficientScope)))
             case .resourceForbidden:
-                return .domain(.auth(.permissionDenied(reason: .resourceForbidden)))
+                return .boundary(.auth(.permissionDenied(reason: .resourceForbidden)))
             case .forbidden:
-                return .domain(.auth(.permissionDenied(reason: .unknownForbidden)))
+                return .boundary(.auth(.permissionDenied(reason: .unknownForbidden)))
             }
         case .resource(let resourceReason):
             switch resourceReason {
             case .notSingular:
                 return .system(.contractViolation(details: "Not Singlular"))
             case .conflict:
-                return .domain(.registration(.alreadyExists(reason: .duplicatedEmail)))
+                return .boundary(.registration(.alreadyExists(reason: .duplicatedEmail)))
             case .notFound:
                 // 응답을 기대하는데 없는 경우에 해당
                 return .system(.contractViolation(details: "Not Found"))

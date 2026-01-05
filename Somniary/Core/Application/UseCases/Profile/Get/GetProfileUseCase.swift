@@ -18,19 +18,21 @@ struct GetProfileUseCase {
         let profileResult = await repository.getProfile(policy: policy)
             .mapError { portFailure -> GetProfileUseCaseError in
                 switch portFailure {
-                case .system(let systemError):
-                    return .system(systemError)
-                case .domain(let failureCause):
-                    return mapToUseCaseError(failureCause)
+                case .system(let error):
+                    return .system(error)
+                case .boundary(let error):
+                    return mapToUseCaseError(error)
                 }
             }
 
         return profileResult
     }
 
-    private func mapToUseCaseError(_ failureCause: ProfileBoundaryError) -> GetProfileUseCaseError {
-        return .from(failureCause: failureCause) { cause in
-            switch cause {
+    // TODO: 매핑 로직 프로토콜 레벨에서 공통화
+
+    private func mapToUseCaseError(_ error: ProfileBoundaryError) -> GetProfileUseCaseError {
+        return .from(boundaryError: error) { boundaryError in
+            switch boundaryError {
             case .auth(let error):
                 return classifyAuthError(error)
             case .profile(let error):
@@ -39,17 +41,17 @@ struct GetProfileUseCase {
         }
     }
 
-    private func classifyAuthError(_ error: AuthDomainError) -> GetProfileUseCaseError.Classification {
+    private func classifyAuthError(_ error: AuthDomainError) -> GetProfileContractError? {
         switch error {
         default:
-            return .outOfContract
+            return nil
         }
     }
 
-    private func classifyProfileError(_ error: ProfileDomainError) -> GetProfileUseCaseError.Classification {
+    private func classifyProfileError(_ error: ProfileDomainError) -> GetProfileContractError {
         switch error {
         case .invalidNickname(reason: let reason):
-            return .contract(.invalidNickname)
+            return .invalidNickname
         }
     }
 }

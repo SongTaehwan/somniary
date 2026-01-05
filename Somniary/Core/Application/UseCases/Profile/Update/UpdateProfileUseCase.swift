@@ -21,21 +21,21 @@ struct UpdateProfileUseCase {
     }
 
     func execute(_ input: Input) async -> Result<UserProfile, UpdateProfileUseCaseError> {
-        let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email)).mapError { failureCause -> UpdateProfileUseCaseError in
-            switch failureCause {
+        let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email)).mapError { portFailure -> UpdateProfileUseCaseError in
+            switch portFailure {
             case .system(let systemError):
                 return .system(systemError)
-            case .domain(let cause):
-                return mapToUseCaseError(cause)
+            case .boundary(let boundaryError):
+                return mapToUseCaseError(boundaryError)
             }
         }
 
         return result
     }
 
-    private func mapToUseCaseError(_ failureCause: ProfileBoundaryError) -> UpdateProfileUseCaseError {
-        return .from(failureCause: failureCause) { cause in
-            switch cause {
+    private func mapToUseCaseError(_ boundaryError: ProfileBoundaryError) -> UpdateProfileUseCaseError {
+        return .from(boundaryError: boundaryError) { error in
+            switch error {
             case .profile(let domainError):
                 return classifyProfileError(domainError)
             case .auth(let domainError):
@@ -44,17 +44,17 @@ struct UpdateProfileUseCase {
         }
     }
 
-    private func classifyAuthError(_ error: AuthDomainError) -> UpdateProfileUseCaseError.Classification {
+    private func classifyAuthError(_ error: AuthDomainError) -> UpdateProfileConractError? {
         switch error {
         default:
-            return .outOfContract
+            return .none
         }
     }
 
-    private func classifyProfileError(_ error: ProfileDomainError) -> UpdateProfileUseCaseError.Classification {
+    private func classifyProfileError(_ error: ProfileDomainError) -> UpdateProfileConractError? {
         switch error {
         case .invalidNickname(let reason):
-            return .outOfContract
+            return .none
         }
     }
 }
