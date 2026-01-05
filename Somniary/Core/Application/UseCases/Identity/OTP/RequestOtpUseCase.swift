@@ -21,27 +21,18 @@ struct RequestOtpUseCase {
 
     func execute(_ input: Input) async -> Result<VoidResponse, RequestOtpUseCaseError> {
         let result = await repository.requestOtpCode(email: input.email, createUser: true, idempotencyKey: nil)
-            .mapError { portFailure -> RequestOtpUseCaseError in
-                switch portFailure {
-                case .boundary(let error):
-                    return mapToUseCaseError(error)
-                case .system(let error):
-                    return .system(error)
-                }
-            }
+            .mapPortFailureToUseCaseError(contract: RequestOtpContractError.self, classifyAsContract: classifyAsContract(_:))
             .map { VoidResponse() }
 
         return result
     }
 
-    private func mapToUseCaseError(_ error: IdentityBoundaryError) -> RequestOtpUseCaseError {
-        return .from(boundaryError: error) { boundaryError in
-            switch boundaryError {
-            case .auth(let error):
-                return classifyAuthError(error)
-            case .registration(let error):
-                return classifyRegistrationError(error)
-            }
+    private func classifyAsContract(_ error: IdentityBoundaryError) -> RequestOtpContractError? {
+        switch error {
+        case .auth(let error):
+            return classifyAuthError(error)
+        case .registration(let error):
+            return classifyRegistrationError(error)
         }
     }
 

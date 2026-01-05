@@ -15,29 +15,18 @@ struct GetProfileUseCase {
     }
 
     func execute(_ policy: FetchPolicy = .remoteIfStale) async -> Result<UserProfile, GetProfileUseCaseError> {
-        let profileResult = await repository.getProfile(policy: policy)
-            .mapError { portFailure -> GetProfileUseCaseError in
-                switch portFailure {
-                case .system(let error):
-                    return .system(error)
-                case .boundary(let error):
-                    return mapToUseCaseError(error)
-                }
-            }
+        let result = await repository.getProfile(policy: policy)
+            .mapPortFailureToUseCaseError(contract: GetProfileContractError.self, classifyAsContract: classifyAsContract(_:))
 
-        return profileResult
+        return result
     }
 
-    // TODO: 매핑 로직 프로토콜 레벨에서 공통화
-
-    private func mapToUseCaseError(_ error: ProfileBoundaryError) -> GetProfileUseCaseError {
-        return .from(boundaryError: error) { boundaryError in
-            switch boundaryError {
-            case .auth(let error):
-                return classifyAuthError(error)
-            case .profile(let error):
-                return classifyProfileError(error)
-            }
+    private func classifyAsContract(_ error: ProfileBoundaryError) -> GetProfileContractError? {
+        switch error {
+        case .auth(let error):
+            return classifyAuthError(error)
+        case .profile(let error):
+            return classifyProfileError(error)
         }
     }
 

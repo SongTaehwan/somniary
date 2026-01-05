@@ -21,26 +21,18 @@ struct UpdateProfileUseCase {
     }
 
     func execute(_ input: Input) async -> Result<UserProfile, UpdateProfileUseCaseError> {
-        let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email)).mapError { portFailure -> UpdateProfileUseCaseError in
-            switch portFailure {
-            case .system(let systemError):
-                return .system(systemError)
-            case .boundary(let boundaryError):
-                return mapToUseCaseError(boundaryError)
-            }
-        }
+        let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email))
+            .mapPortFailureToUseCaseError(contract: UpdateProfileConractError.self, classifyAsContract: classifyAsContract(_:))
 
         return result
     }
 
-    private func mapToUseCaseError(_ boundaryError: ProfileBoundaryError) -> UpdateProfileUseCaseError {
-        return .from(boundaryError: boundaryError) { error in
-            switch error {
-            case .profile(let domainError):
-                return classifyProfileError(domainError)
-            case .auth(let domainError):
-                return classifyAuthError(domainError)
-            }
+    private func classifyAsContract(_ error: ProfileBoundaryError) -> UpdateProfileConractError? {
+        switch error {
+        case .profile(let error):
+            return classifyProfileError(error)
+        case .auth(let error):
+            return classifyAuthError(error)
         }
     }
 

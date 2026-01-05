@@ -22,14 +22,7 @@ struct LoginUseCase {
 
     func execute(_ input: Input) async -> Result<VoidResponse, LoginUseCaseError> {
         let result = await repository.verify(email: input.email, otpCode: input.otpCode, idempotencyKey: nil)
-            .mapError { portFailure -> LoginUseCaseError in
-                switch portFailure {
-                case .boundary(let error):
-                    return mapToUseCaseError(error)
-                case .system(let error):
-                    return .system(error)
-                }
-            }
+            .mapPortFailureToUseCaseError(contract: LoginContractError.self, classifyAsContract: classifyAsContract)
 
         if case let .success(entity) = result {
             try? TokenRepository.shared.updateToken(entity)
@@ -44,14 +37,12 @@ struct LoginUseCase {
         fatalError("Implement Required")
     }
 
-    private func mapToUseCaseError(_ boundaryError: IdentityBoundaryError) -> LoginUseCaseError {
-        return .from(boundaryError: boundaryError) { error in
-            switch error {
-            case .auth(let domainError):
-                return classifyAuthError(domainError)
-            case .registration(let error):
-                return classifyRegistrationError(error)
-            }
+    private func classifyAsContract(_ error: IdentityBoundaryError) -> LoginContractError? {
+        switch error {
+        case .auth(let error):
+            return classifyAuthError(error)
+        case .registration(let error):
+            return classifyRegistrationError(error)
         }
     }
 
