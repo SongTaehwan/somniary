@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(*, deprecated, message: "UseCaseError 로 편입될 계획")
 typealias AppleLoginError = SomniaryError<AppleLoginErrorDescriptor, AppleLoginErrorContext>
 
 extension AppleLoginError {

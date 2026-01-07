@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(*, deprecated, message: "로그용 에러 객체로 대체")
 typealias AuthError = SomniaryError<AuthErrorDescriptor, AuthErrorContext>
 
 extension AuthError {
