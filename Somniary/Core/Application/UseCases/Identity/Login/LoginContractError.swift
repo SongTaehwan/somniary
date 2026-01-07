@@ -1,5 +1,5 @@
 //
-//  LoginUseCaseError.swift
+//  LoginContractError.swift
 //  Somniary
 //
 //  Created by 송태환 on 1/2/26.
