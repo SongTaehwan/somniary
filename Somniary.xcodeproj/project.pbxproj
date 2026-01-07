@@ -49,6 +49,7 @@
 				Helpers/README.md,
 				Info.plist,
 				Infrastructure/README.md,
+				Modules/Support/ErrorResolution/README.md,
 			);
 			target = E413834E2E713AE400F9A185 /* Somniary */;
 		};
