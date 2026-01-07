@@ -13,9 +13,3 @@ enum RequestOtpContractError: Error, Equatable {
 }
 
 typealias RequestOtpUseCaseError = UseCaseError<RequestOtpContractError, IdentityBoundaryError>
-
-extension RequestOtpUseCaseError {
-    var userMessage: String {
-        ""
-    }
-}

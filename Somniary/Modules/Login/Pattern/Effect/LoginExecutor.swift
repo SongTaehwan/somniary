@@ -13,11 +13,11 @@ final class LoginExecutor: EffectExecuting {
 
     private var tasks: [UUID: Task<Void, Never>] = [:]
     private let loginUseCase: LoginUseCase
-    private let emailUseCase: RequestOtpUseCase
+    private let otpUseCase: RequestOtpUseCase
 
-    init(loginUseCase: LoginUseCase, emailUseCase: RequestOtpUseCase) {
+    init(loginUseCase: LoginUseCase, otpUseCase: RequestOtpUseCase) {
         self.loginUseCase = loginUseCase
-        self.emailUseCase = emailUseCase
+        self.otpUseCase = otpUseCase
     }
 
     func perform(_ plan: Plan, send: @escaping (Intent) -> Void) {
@@ -30,7 +30,7 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result = await emailUseCase.execute(.init(email: email))
+                let result = await otpUseCase.execute(.init(email: email))
 
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.loginResponse(result))) }
@@ -43,7 +43,7 @@ final class LoginExecutor: EffectExecuting {
                     tasks[requestId] = nil
                 }
 
-                let result = await emailUseCase.execute(.init(email: email))
+                let result = await otpUseCase.execute(.init(email: email))
 
                 guard !Task.isCancelled else { return }
                 await MainActor.run { send(.systemInternal(.signupResponse(result))) }
