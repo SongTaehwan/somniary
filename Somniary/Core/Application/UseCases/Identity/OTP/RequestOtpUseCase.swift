@@ -21,45 +21,32 @@ struct RequestOtpUseCase {
 
     func execute(_ input: Input) async -> Result<VoidResponse, RequestOtpUseCaseError> {
         let result = await repository.requestOtpCode(email: input.email, createUser: true, idempotencyKey: nil)
-            .mapError { portFailure -> RequestOtpUseCaseError in
-                switch portFailure {
-                case .domain(let failureCause):
-                    return mapToUseCaseError(failureCause)
-                case .system(let systemError):
-                    return .system(systemError)
-                }
-            }
+            .mapPortFailureToUseCaseError(contract: RequestOtpContractError.self, classifyAsContract: classifyAsContract(_:))
             .map { VoidResponse() }
 
         return result
     }
 
-    private func mapToUseCaseError(_ failureCause: IdentityBoundaryError) -> RequestOtpUseCaseError {
-        return .from(failureCause: failureCause) { domainError in
-            switch domainError {
-            case .auth(let error):
-                return classifyAuthError(error)
-            case .registration(let error):
-                return classifyRegistrationError(error)
-            }
+    private func classifyAsContract(_ error: IdentityBoundaryError) -> RequestOtpContractError? {
+        switch error {
+        case .auth(let error):
+            return classifyAuthError(error)
+        case .registration(let error):
+            return classifyRegistrationError(error)
         }
     }
 
-    private func classifyRegistrationError(_ error: RegistrationDomainError) -> RequestOtpUseCaseError.Classification {
+    private func classifyRegistrationError(_ error: RegistrationDomainError) -> RequestOtpContractError? {
         switch error {
         case .alreadyExists(let reason):
-            return .contract(.alreadyRegistered)
+            return .alreadyRegistered
         }
     }
 
-    private func classifyAuthError(_ error: AuthDomainError) -> RequestOtpUseCaseError.Classification {
+    private func classifyAuthError(_ error: AuthDomainError) -> RequestOtpContractError? {
         switch error {
-        case .accountRestricted(reason: let reason):
-            return .outOfContract
-        case .permissionDenied(reason: let reason):
-            return .outOfContract
-        case .authRequired(reason: let reason):
-            return .outOfContract
+        @unknown default:
+            return nil
         }
     }
 }

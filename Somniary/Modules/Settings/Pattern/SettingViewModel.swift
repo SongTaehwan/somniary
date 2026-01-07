@@ -13,7 +13,10 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
         var errorMessage: String?
     }
 
-    init(coordinator: Coordinator, executor: Executor) {
+    private let environment: SettingEnvironment
+
+    init(coordinator: Coordinator, executor: Executor, environment: SettingEnvironment) {
+        self.environment = environment
         super.init(coordinator: coordinator, executor: executor, initialState: State())
         self.binding()
     }
@@ -27,7 +30,7 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
     }
 
     private func handle(_ intent: SettingIntent) {
-        let (updatedState, plans) = combinedSettingReducer(state: self.state, intent: intent)
+        let (updatedState, plans) = combinedSettingReducer(state: self.state, intent: intent, env: environment.reducerEnv)
 
         if self.state != updatedState {
             self.state = updatedState

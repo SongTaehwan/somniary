@@ -16,9 +16,15 @@ struct LogoutUseCase {
         self.repository = authRepository
     }
 
-    func execute() async -> VoidResponse {
-        await repository.logout()
+    func execute() async -> Result<VoidResponse, LogoutUseCaseError> {
+        let result = await repository.logout()
+            .mapPortFailureToUseCaseError(contract: LogoutContractError.self) { error in
+                return .none
+            }
+            .map { _ in VoidResponse() }
+
         TokenRepository.shared.clear()
-        return VoidResponse()
+
+        return result
     }
 }

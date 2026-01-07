@@ -15,41 +15,32 @@ struct GetProfileUseCase {
     }
 
     func execute(_ policy: FetchPolicy = .remoteIfStale) async -> Result<UserProfile, GetProfileUseCaseError> {
-        let profileResult = await repository.getProfile(policy: policy)
-            .mapError { portFailure -> GetProfileUseCaseError in
-                switch portFailure {
-                case .system(let systemError):
-                    return .system(systemError)
-                case .domain(let failureCause):
-                    return mapToUseCaseError(failureCause)
-                }
-            }
+        let result = await repository.getProfile(policy: policy)
+            .mapPortFailureToUseCaseError(contract: GetProfileContractError.self, classifyAsContract: classifyAsContract(_:))
 
-        return profileResult
+        return result
     }
 
-    private func mapToUseCaseError(_ failureCause: ProfileBoundaryError) -> GetProfileUseCaseError {
-        return .from(failureCause: failureCause) { cause in
-            switch cause {
-            case .auth(let error):
-                return classifyAuthError(error)
-            case .profile(let error):
-                return classifyProfileError(error)
-            }
+    private func classifyAsContract(_ error: ProfileBoundaryError) -> GetProfileContractError? {
+        switch error {
+        case .auth(let error):
+            return classifyAuthError(error)
+        case .profile(let error):
+            return classifyProfileError(error)
         }
     }
 
-    private func classifyAuthError(_ error: AuthDomainError) -> GetProfileUseCaseError.Classification {
+    private func classifyAuthError(_ error: AuthDomainError) -> GetProfileContractError? {
         switch error {
         default:
-            return .outOfContract
+            return nil
         }
     }
 
-    private func classifyProfileError(_ error: ProfileDomainError) -> GetProfileUseCaseError.Classification {
+    private func classifyProfileError(_ error: ProfileDomainError) -> GetProfileContractError {
         switch error {
         case .invalidNickname(reason: let reason):
-            return .contract(.invalidNickname)
+            return .invalidNickname
         }
     }
 }

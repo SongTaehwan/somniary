@@ -21,40 +21,32 @@ struct UpdateProfileUseCase {
     }
 
     func execute(_ input: Input) async -> Result<UserProfile, UpdateProfileUseCaseError> {
-        let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email)).mapError { failureCause -> UpdateProfileUseCaseError in
-            switch failureCause {
-            case .system(let systemError):
-                return .system(systemError)
-            case .domain(let cause):
-                return mapToUseCaseError(cause)
-            }
-        }
+        let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email))
+            .mapPortFailureToUseCaseError(contract: UpdateProfileConractError.self, classifyAsContract: classifyAsContract(_:))
 
         return result
     }
 
-    private func mapToUseCaseError(_ failureCause: ProfileBoundaryError) -> UpdateProfileUseCaseError {
-        return .from(failureCause: failureCause) { cause in
-            switch cause {
-            case .profile(let domainError):
-                return classifyProfileError(domainError)
-            case .auth(let domainError):
-                return classifyAuthError(domainError)
-            }
+    private func classifyAsContract(_ error: ProfileBoundaryError) -> UpdateProfileConractError? {
+        switch error {
+        case .profile(let error):
+            return classifyProfileError(error)
+        case .auth(let error):
+            return classifyAuthError(error)
         }
     }
 
-    private func classifyAuthError(_ error: AuthDomainError) -> UpdateProfileUseCaseError.Classification {
+    private func classifyAuthError(_ error: AuthDomainError) -> UpdateProfileConractError? {
         switch error {
         default:
-            return .outOfContract
+            return .none
         }
     }
 
-    private func classifyProfileError(_ error: ProfileDomainError) -> UpdateProfileUseCaseError.Classification {
+    private func classifyProfileError(_ error: ProfileDomainError) -> UpdateProfileConractError? {
         switch error {
         case .invalidNickname(let reason):
-            return .outOfContract
+            return .none
         }
     }
 }

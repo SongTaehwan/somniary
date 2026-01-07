@@ -1,5 +1,5 @@
 //
-//  GetProfileUseCaseError.swift
+//  GetProfileContractError.swift
 //  Somniary
 //
 //  Created by 송태환 on 12/23/25.

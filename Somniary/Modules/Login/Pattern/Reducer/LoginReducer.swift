@@ -192,12 +192,10 @@ fileprivate func reduceInternalIntent(
             ])
 
         case .failure(let error):
-            newState.requirement = .errorHandling
-            newState.errorMessage = error.userMessage
-            return (newState, [
-//                .logEvent(message: "login_failed", errorMessage: error.log),
-                .toast(error.userMessage)
-            ])
+            newState.latestRequestId = nil
+            let resolution = env.useCaseResolutionResolver.resolve(error)
+            let resolved = apply(resolution, state: state)
+            return resolved
         }
     case .signupResponse(let result):
         newState.isLoading = false
@@ -211,17 +209,15 @@ fileprivate func reduceInternalIntent(
             ])
 
         case .failure(let error):
-            newState.requirement = .errorHandling
-            newState.errorMessage = error.userMessage
-            return (newState, [
-//                .logEvent(message: "signup_failed", errorMessage: error.log),
-                .toast(error.userMessage)
-            ])
+            newState.latestRequestId = nil
+            let resolution = env.useCaseResolutionResolver.resolve(error)
+            let resolved = apply(resolution, state: state)
+            return resolved
         }
 
     case .verifyResponse(let result):
         switch result {
-        case .success(let token):
+        case .success:
             return (newState, [
                 .logEvent("otp_verification_success", level: .debug),
                 .logEvent("navigate_home"),
@@ -229,11 +225,10 @@ fileprivate func reduceInternalIntent(
             ])
 
         case .failure(let error):
-            newState.errorMessage = error.userMessage
-            return (newState, [
-//                .logEvent(message: "otp_verfication_failed", errorMessage: error.log),
-                .toast(error.userMessage),
-            ])
+            newState.latestRequestId = nil
+            let resolution = env.useCaseResolutionResolver.resolve(error)
+            let resolved = apply(resolution, state: state)
+            return resolved
         }
     }
 }
@@ -272,7 +267,7 @@ fileprivate func reduceNavigationIntent(
 
 struct LoginReducerEnvironment {
     // TODO: 정책 추가
-//    let policies: Any
+    let useCaseResolutionResolver: any UseCaseResolutionResolving
     let makeRequestId: () -> UUID
 }
 
@@ -297,4 +292,52 @@ func combinedReducer(
     case .navigation(let intent):
         return reduceNavigationIntent(state: state, intent: intent, env: env)
     }
+}
+
+// MARK: UseCase Error Handling
+fileprivate func apply(
+    _ resolution: UseCaseResolution,
+    state: LoginViewModel.LoginState
+) -> (state: LoginViewModel.LoginState, effects: [LoginEffectPlan]) {
+    var newState = state
+    var effects: [LoginEffectPlan] = []
+
+    newState.requirement = .errorHandling
+    newState.isLoading = false
+
+    switch resolution {
+    case .inform(let message):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+
+    case .retry(let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+
+    case .cooldown(let seconds, let message):
+        let text: String
+        if let seconds {
+            text = "\(message) (\(seconds)s)"
+        } else {
+            text = message
+        }
+        newState.errorMessage = text
+        effects += [.toast(text)]
+
+    case .contactSupport(let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+
+    case .updateApp(message: let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+    case .reauth(mode: let mode, message: let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+    case .accessDenied(message: let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+    }
+
+    return (newState, effects)
 }

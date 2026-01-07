@@ -10,10 +10,12 @@ import Foundation
 fileprivate typealias State = SettingViewModel.State
 fileprivate typealias Plan = SettingEffectPlan
 fileprivate typealias Intent = SettingIntent
+fileprivate typealias Environment = SettingReducerEnvironment
 
 fileprivate func reduceLicycleIntent(
     state: State,
-    intent: Intent.LifecycleIntent
+    intent: Intent.LifecycleIntent,
+    env: Environment
 ) -> (State, [Plan]) {
     switch intent {
     case .appeared:
@@ -27,7 +29,8 @@ fileprivate func reduceLicycleIntent(
 
 fileprivate func reduceUserIntent(
     state: State,
-    intent: Intent.UserIntent
+    intent: Intent.UserIntent,
+    env: Environment
 ) -> (State, [Plan]) {
     switch intent {
     case .profileTapped:
@@ -65,24 +68,22 @@ fileprivate func reduceUserIntent(
 
 fileprivate func reduceSystemExternalIntent(
     state: State,
-    intent: Intent.SystemExtenralIntent
+    intent: Intent.SystemExtenralIntent,
+    env: Environment
 ) -> (State, [Plan]) {
     fatalError("implement required")
 }
 
 fileprivate func reduceSystemInternalIntent(
     state: State,
-    intent: Intent.SystemInternalIntent
+    intent: Intent.SystemInternalIntent,
+    env: Environment
 ) -> (State, [Plan]) {
-    var newState = state
-
     switch intent {
     case .logoutResponse(let response):
-        if case .failure(let failure) = response {
-            newState.errorMessage = failure.userMessage
-            return (newState, [
-                .logEvent(failure.debugLog)
-            ])
+        if case .failure(let error) = response {
+            let resolution = env.useCaseResolutionResolver.resolve(error)
+            return apply(resolution, state: state)
         }
 
         return (state, [
@@ -103,16 +104,61 @@ fileprivate func reduceSystemInternalIntent(
 
 func combinedSettingReducer(
     state: SettingViewModel.State,
-    intent category: SettingIntent
+    intent category: SettingIntent,
+    env: SettingReducerEnvironment
 ) -> (SettingViewModel.State, [SettingEffectPlan]) {
     switch category {
     case .lifecycle(let intent):
-        return reduceLicycleIntent(state: state, intent: intent)
+        return reduceLicycleIntent(state: state, intent: intent, env: env)
     case .user(let intent):
-        return reduceUserIntent(state: state, intent: intent)
+        return reduceUserIntent(state: state, intent: intent, env: env)
     case .systemExtenral(let intent):
-        return reduceSystemExternalIntent(state: state, intent: intent)
+        return reduceSystemExternalIntent(state: state, intent: intent, env: env)
     case .systemInternal(let intent):
-        return reduceSystemInternalIntent(state: state, intent: intent)
+        return reduceSystemInternalIntent(state: state, intent: intent, env: env)
     }
+}
+
+fileprivate func apply(
+    _ resolution: UseCaseResolution,
+    state: State
+) -> (state: State, effects: [Plan]) {
+    var newState = state
+    var effects: [Plan] = []
+
+    switch resolution {
+    case .inform(let message):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+
+    case .retry(let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+
+    case .cooldown(let seconds, let message):
+        let text: String
+        if let seconds {
+            text = "\(message) (\(seconds)s)"
+        } else {
+            text = message
+        }
+        newState.errorMessage = text
+        effects += [.toast(text)]
+
+    case .contactSupport(let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+
+    case .updateApp(message: let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+    case .reauth(mode: let mode, message: let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+    case .accessDenied(message: let message, _):
+        newState.errorMessage = message
+        effects += [.toast(message)]
+    }
+
+    return (newState, effects)
 }

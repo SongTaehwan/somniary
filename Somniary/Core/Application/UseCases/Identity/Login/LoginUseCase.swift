@@ -22,14 +22,7 @@ struct LoginUseCase {
 
     func execute(_ input: Input) async -> Result<VoidResponse, LoginUseCaseError> {
         let result = await repository.verify(email: input.email, otpCode: input.otpCode, idempotencyKey: nil)
-            .mapError { portFailure -> LoginUseCaseError in
-                switch portFailure {
-                case .domain(let failureCause):
-                    return mapToUseCaseError(failureCause)
-                case .system(let systemError):
-                    return .system(systemError)
-                }
-            }
+            .mapPortFailureToUseCaseError(contract: LoginContractError.self, classifyAsContract: classifyAsContract)
 
         if case let .success(entity) = result {
             try? TokenRepository.shared.updateToken(entity)
@@ -39,25 +32,31 @@ struct LoginUseCase {
         return result.map { _ in VoidResponse() }
     }
 
+    // TODO: Apple Login
     func execute(_ input: AppleCredential) async -> Result<VoidResponse, LoginUseCaseError> {
         fatalError("Implement Required")
     }
 
-    private func mapToUseCaseError(_ failureCause: IdentityBoundaryError) -> LoginUseCaseError {
-        return .from(failureCause: failureCause) { error in
-            switch error {
-            case .auth(let domainError):
-                return classifyFailureCause(domainError)
-            @unknown default:
-                return .outOfContract
-            }
+    private func classifyAsContract(_ error: IdentityBoundaryError) -> LoginContractError? {
+        switch error {
+        case .auth(let error):
+            return classifyAuthError(error)
+        case .registration(let error):
+            return classifyRegistrationError(error)
         }
     }
 
-    private func classifyFailureCause(_ error: AuthDomainError) -> LoginUseCaseError.Classification {
+    private func classifyAuthError(_ error: AuthDomainError) -> LoginContractError? {
         switch error {
         @unknown default:
-            return .outOfContract
+            return nil
+        }
+    }
+
+    private func classifyRegistrationError(_ error: RegistrationDomainError) -> LoginContractError? {
+        switch error {
+        case .alreadyExists(let reason):
+            return .none
         }
     }
 }
