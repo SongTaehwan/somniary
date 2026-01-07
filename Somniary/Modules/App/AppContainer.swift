@@ -104,11 +104,17 @@ extension AppContainer: SettingCoordinatorDependency {
         let authRepository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
         let logoutUsecase = LogoutUseCase(authRepository: authRepository)
 
+        let reducerEnv = SettingReducerEnvironment(useCaseResolutionResolver: ChainedUseCaseResolutionResolver(partials: [])) {
+            UUID()
+        }
+
         let executor = SettingExecutor(
             logoutUseCase: logoutUsecase,
             getProfileUseCase: getProfileUseCase,
             updateProfileUseCase: UpdateProfileUseCase(repository: self.profileRepository)
         )
-        return SettingViewModel(coordinator: flow, executor: executor)
+
+        let environment = SettingEnvironment(reducerEnv: reducerEnv)
+        return SettingViewModel(coordinator: flow, executor: executor, environment: environment)
     }
 }

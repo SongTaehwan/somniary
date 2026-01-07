@@ -22,7 +22,7 @@ enum SettingIntent: Equatable {
     enum SystemExtenralIntent: Equatable {}
 
     enum SystemInternalIntent: Equatable {
-        case logoutResponse(Result<VoidResponse, AuthError>)
+        case logoutResponse(Result<VoidResponse, LogoutUseCaseError>)
         case profileUpdateResponse
         case profileResponse
     }

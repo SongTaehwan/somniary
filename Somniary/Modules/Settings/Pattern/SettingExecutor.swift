@@ -22,48 +22,27 @@ final class SettingExecutor: EffectExecuting {
         switch plan.type {
         case let .updateProfile(id, name, email):
             Task {
-                let result = await Result.catching {
-                    try await updateProfileUseCase.execute(.init(id: id, name: name, email: email))
-                } mapError: { error in
-                    error
-                }
-
+                let result = await updateProfileUseCase.execute(.init(id: id, name: name, email: email))
                 print("RESULT: \(result)")
 
                 send(.systemInternal(.profileUpdateResponse))
             }
         case .getProfile:
             Task {
-                let result = await Result.catching {
-                    try await getProfileUseCase.execute()
-                } mapError: { error in
-                    error
-                }
-
+                let result = await getProfileUseCase.execute()
                 print("RESULT: \(result)")
 
                 send(.systemInternal(.profileResponse))
             }
         case .logout:
-            handleLogout { result in
+            Task {
+                let result = await logoutUseCase.execute()
                 send(.systemInternal(.logoutResponse(result)))
             }
         case .logEvent(let message):
             print(message)
         default:
             break
-        }
-    }
-
-    private func handleLogout(callback: @escaping (Result<VoidResponse, AuthError>) -> Void) {
-        Task {
-            let result = await Result.catching {
-                try await logoutUseCase.execute()
-            } mapError: { error in
-                error as? AuthError ?? .unknown()
-            }
-
-            callback(result)
         }
     }
 }
