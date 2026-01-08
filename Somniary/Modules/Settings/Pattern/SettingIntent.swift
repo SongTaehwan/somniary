@@ -27,12 +27,6 @@ enum SettingIntent: Equatable {
         case profileResponse
     }
 
-    enum NavigationIntent: Equatable {
-        case routeToHome
-        case routeToProfileEdit
-        case routeToNotificationSettings
-    }
-
     // Lifecycle(View)
     case lifecycle(LifecycleIntent)
 

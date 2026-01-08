@@ -43,14 +43,6 @@ internal enum LoginIntent: Equatable {
         case signupCompletionTapped
     }
 
-    // MARK: Navigation
-    enum NavigationIntent: Equatable {
-        case routeToHome
-        case routeToSignUp
-        case routeToVerification
-        case routeToSignUpCompletion
-    }
-
     // Lifecycle(View)
     case lifecycle(LifecycleIntent)
 
@@ -62,7 +54,4 @@ internal enum LoginIntent: Equatable {
 
     // Internal(Effect)
     case systemInternal(SystemInternalIntent)
-
-    // Navigation
-    case navigation(NavigationIntent)
 }

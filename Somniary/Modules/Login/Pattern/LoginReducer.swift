@@ -233,38 +233,6 @@ fileprivate func reduceInternalIntent(
     }
 }
 
-fileprivate func reduceNavigationIntent(
-    state: LoginViewModel.LoginState,
-    intent: LoginIntent.NavigationIntent,
-    env: LoginReducerEnvironment
-) -> (LoginViewModel.LoginState, [LoginEffectPlan]) {
-    switch intent {
-    case .routeToHome:
-        return (state, [
-            .logEvent("navigate_home"),
-            .route(.navigateHome)
-        ])
-
-    case .routeToSignUp:
-        return (state, [
-            .logEvent("navigate_signup"),
-            .route(.navigateSignUp)
-        ])
-
-    case .routeToVerification:
-        return (state, [
-            .logEvent("navigate_otp_verification"),
-            .route(.navigateOtpVerification)
-        ])
-
-    case .routeToSignUpCompletion:
-        return (state, [
-            .logEvent("navigate_signup_completion"),
-            .route(.navigateSignupCompletion)
-        ])
-    }
-}
-
 struct LoginReducerEnvironment {
     // TODO: 정책 추가
     let useCaseResolutionResolver: any UseCaseResolutionResolving
@@ -288,9 +256,6 @@ func combinedReducer(
 
     case .systemInternal(let intent):
         return reduceInternalIntent(state: state, intent: intent, env: env)
-
-    case .navigation(let intent):
-        return reduceNavigationIntent(state: state, intent: intent, env: env)
     }
 }
 

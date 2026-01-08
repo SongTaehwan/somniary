@@ -9,7 +9,6 @@ import Foundation
 import CryptoKit
 
 struct NonceGenerator: CryptoProviding {
-
     static let shared = NonceGenerator()
 
     private init() {}
