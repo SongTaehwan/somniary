@@ -17,7 +17,7 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
 
     func request(_ endpoint: Target) async -> Result<HTTPResponse, TransportError> {
         #if DEBUG
-        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path) \(String(describing: endpoint.headers))")
+        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path) \(String(describing: endpoint.headers!.filter({ !$0.value.isEmpty }).keys))")
         #endif
 
         guard let request = try? endpoint.asURLRequest() else {
@@ -45,6 +45,16 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
         let status = httpResponse.statusCode
         let body = dataResponse.data
 
+        #if DEBUG
+        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path)")
+        print("Status: \(status)")
+        if let body {
+            print("Response Body: \(String(data: body, encoding: .utf8) ?? "non-utf8 body, bytes=\(body.count)")")
+        } else {
+            print("Response Body: Empty")
+        }
+        #endif
+
         return .success(HTTPResponse(url: url, headers: headers, status: status, body: body))
     }
 
@@ -55,6 +65,11 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
             #endif
             DebugAssert.fail(category: .network, "네트워크 에러 정보가 없습니다.")
             return .unknown
+        }
+
+        // Swift Concurrency 취소
+        if error is CancellationError {
+            return .cancelled
         }
 
         // Alamofire 에러 매핑
@@ -92,20 +107,28 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
             let code = urlError.code
 
             switch code {
-            case .notConnectedToInternet: return .network(.offline)
             case .timedOut:               return .network(.timeout)
-            case .dnsLookupFailed:        return .network(.dnsLookupFailed)
             case .networkConnectionLost:  return .network(.connectionLost)
-            case .httpTooManyRedirects:    return .network(.redirectLoop)
+            case .httpTooManyRedirects:   return .network(.redirectLoop)
             case .cancelled:              return .cancelled
+
+            case .badURL, .unsupportedURL:
+                return .requestBuildFailed
+
+            case .dnsLookupFailed, .cannotFindHost:
+                return .network(.dnsLookupFailed)
+
+            case .notConnectedToInternet, .dataNotAllowed, .internationalRoamingOff:
+                return .network(.offline)
 
                 // TLS 관련
             case .serverCertificateUntrusted,
-                    .serverCertificateHasBadDate,
-                    .serverCertificateHasUnknownRoot,
-                    .secureConnectionFailed,
-                    .clientCertificateRejected,
-                    .clientCertificateRequired:
+                 .serverCertificateHasBadDate,
+                 .serverCertificateHasUnknownRoot,
+                 .secureConnectionFailed,
+                 .serverCertificateNotYetValid,
+                 .clientCertificateRejected,
+                 .clientCertificateRequired:
                 return .tls
 
             default:

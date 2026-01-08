@@ -9,7 +9,8 @@ import SwiftUI
 
 protocol AppCoordinatorDependency {
     func makeDeeplinkCoordinator() -> DeeplinkCoordinator
-    func makeStartFlowCoodinator() -> any Coordinator
+    func makeStartFlowCoordinator() -> any Coordinator
+    func makeLoginFlowCoordinator() -> any Coordinator
 }
 
 /// App Root Coodinator
@@ -22,7 +23,7 @@ final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
     init(container: AppCoordinatorDependency) {
         self.denpdency = container
         self.deeplinkCoordinator = container.makeDeeplinkCoordinator()
-        self.startCoordinator = container.makeStartFlowCoodinator()
+        self.startCoordinator = container.makeStartFlowCoordinator()
         self.startCoordinator.finishDelegate = self
     }
 
@@ -37,19 +38,16 @@ final class AppCoordinator: ObservableObject, CoordinatorFinishDelegate {
 
     /// 코디네이터 플로우가 종료된 경우 네비게이션 처리
     func didFinish(childCoordinator: any Coordinator) {
-        switch childCoordinator {
-        case is LoginCoordinator:
-            self.navigateToHome()
-        case is TabBarCoordinator:
-            // undefined yet
-            break;
-        default:
-            break
+        Task { @MainActor in
+            switch childCoordinator {
+            case is LoginCoordinator:
+                self.startCoordinator = self.denpdency.makeStartFlowCoordinator()
+            case is TabBarCoordinator:
+                self.startCoordinator = self.denpdency.makeLoginFlowCoordinator()
+            default:
+                break
+            }
+            self.startCoordinator.finishDelegate = self
         }
-    }
-
-    private func navigateToHome() {
-        self.startCoordinator = TabBarCoordinator()
-        self.startCoordinator.finishDelegate = self
     }
 }

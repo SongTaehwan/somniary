@@ -42,12 +42,14 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Common/README.md,
+				Core/Application/README.md,
 				Core/Domain/README.md,
 				Core/README.md,
 				Foundation/README.md,
 				Helpers/README.md,
 				Info.plist,
 				Infrastructure/README.md,
+				Modules/Support/ErrorResolution/README.md,
 			);
 			target = E413834E2E713AE400F9A185 /* Somniary */;
 		};

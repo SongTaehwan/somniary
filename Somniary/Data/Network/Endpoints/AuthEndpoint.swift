@@ -8,6 +8,7 @@
 import Foundation
 
 enum AuthEndpoint: SomniaryEndpoint {
+    case getAuthUser
     case authenticateWithApple(payload: NetAuth.Apple.Request)
     case requestOtpCode(payload: NetAuth.OTP.Request)
     case verify(payload: NetAuth.Email.Request)
@@ -18,6 +19,8 @@ enum AuthEndpoint: SomniaryEndpoint {
 extension AuthEndpoint {
     var path: String {
         switch self {
+        case .getAuthUser:
+            return "/auth/v1/user"
         case .requestOtpCode:
             return "/auth/v1/otp"
         case .verify:
@@ -28,6 +31,21 @@ extension AuthEndpoint {
             return "/auth/v1/logout"
         case .authenticateWithApple:
             return "/auth/v1/token"
+        }
+    }
+
+    var headers: HTTPHeaders? {
+        var headers = [
+            "apiKey": AppInfo.shared.domainClientKey,
+            "Content-Type": "application/json"
+        ]
+
+        switch self {
+        case .logout, .getAuthUser:
+            headers.updateValue("Bearer \(TokenRepository.shared.getAccessToken() ?? "")", forKey: "Authorization")
+            return headers
+        default:
+            return headers
         }
     }
 
@@ -54,7 +72,7 @@ extension AuthEndpoint {
             return .entity(data: payload)
         case .authenticateWithApple(let payload):
             return .entity(data: payload)
-        case .logout:
+        case .logout, .getAuthUser:
             return .plain
         }
     }
