@@ -90,3 +90,29 @@ extension UseCaseResolution {
         (error as? UserMessageKeyProviding)?.userMessageKey ?? defaultKey
     }
 }
+
+#if DEBUG
+extension UseCaseResolution {
+    func debugPrint(caller: String = #function, file: String = #file, line: Int = #line) {
+        let message = {
+            let time = Date.now.formatted(date: .numeric, time: .standard)
+            let fileName = (file as NSString).lastPathComponent
+            return """
+            ╔══════════════════════════════════════════════════════════════
+            ║ 💥 \(UseCaseResolution.self)
+            ╠══════════════════════════════════════════════════════════════
+            ║ 📚 Layer      : Presentation
+            ║ 📞 Caller     : \(caller)
+            ║ 📍 Location   : \(fileName):\(line)
+            ╠══════════════════════════════════════════════════════════════
+            ║ 💬 Case       : \(String.init(describing: self).replacingOccurrences(of: "Somniary.", with: ""))
+            ╠──────────────────────────────────────────────────────────────
+            ║ ⏰ Time       : \(time)
+            ╚══════════════════════════════════════════════════════════════
+            """
+        }()
+
+        print(message)
+    }
+}
+#endif

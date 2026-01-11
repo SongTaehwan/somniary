@@ -23,16 +23,12 @@ final class SettingExecutor: EffectExecuting {
         case let .updateProfile(id, name, email):
             Task {
                 let result = await updateProfileUseCase.execute(.init(id: id, name: name, email: email))
-                print("RESULT: \(result)")
-
-                send(.systemInternal(.profileUpdateResponse))
+                send(.systemInternal(.profileUpdateResponse(result)))
             }
         case .getProfile:
             Task {
                 let result = await getProfileUseCase.execute()
-                print("RESULT: \(result)")
-
-                send(.systemInternal(.profileResponse))
+                send(.systemInternal(.profileResponse(result)))
             }
         case .logout:
             Task {

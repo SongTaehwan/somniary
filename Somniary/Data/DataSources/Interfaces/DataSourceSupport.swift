@@ -53,9 +53,7 @@ extension DataSourceSupport {
         } catch {
             #if DEBUG
             print("🚨 Decoding failed: \(error)")
-            if let json = String(data: data, encoding: .utf8) {
-                print("📄 Response body: \(json)")
-            }
+            print("📄 Response body: \(data.debugMessage)")
             #endif
             return .failure(DataSourceError.response(.decodingFailed))
         }
@@ -65,15 +63,29 @@ extension DataSourceSupport {
     private func mapFailureToDataSourceError(_ failure: HTTPResponse) -> DataSourceError {
         // 응답 데이터가 없으면 상태 코드로 매핑
         guard let data = failure.body else {
-            return mapHTTPStatusToError(failure.status)
+            let error = mapHTTPStatusToError(failure.status)
+            #if DEBUG
+            print("📄 [Empty Body]: \(error)")
+            #endif
+            return error
         }
 
         // 에러 응답 디코딩
         guard let errorDto = try? JSONDecoder().decode(NetError.self, from: data) else {
-            return mapHTTPStatusToError(failure.status)
+            let error = mapHTTPStatusToError(failure.status)
+            #if DEBUG
+            print("📄 [Decoding Failed]: \(error)")
+            #endif
+            return error
         }
 
-        return mapErrorCode(errorDto)
+        let error = mapErrorCode(errorDto)
+
+        #if DEBUG
+        print("\(errorDto.deubgMessage)")
+        print("📄 [DataSourceError]: \(error)")
+        #endif
+        return error
     }
 
     /// PostgREST 에러 코드 매핑

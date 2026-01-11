@@ -30,7 +30,7 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
         //  에러 핸들링
         if let error = dataResponse.error {
             #if DEBUG
-            print("🚨 [\(endpoint.method.rawValue)] \(endpoint.path)")
+            print("🚨 [\(endpoint.method.rawValue)] \(endpoint.path): \(error.localizedDescription)")
             #endif
             return .failure(Self.mapToTransportError(error))
         }
@@ -45,17 +45,9 @@ final class HTTPClient<Target: Endpoint>: HTTPNetworking {
         let status = httpResponse.statusCode
         let body = dataResponse.data
 
-        #if DEBUG
-        print("🌐 [\(endpoint.method.rawValue)] \(endpoint.path)")
-        print("Status: \(status)")
-        if let body {
-            print("Response Body: \(String(data: body, encoding: .utf8) ?? "non-utf8 body, bytes=\(body.count)")")
-        } else {
-            print("Response Body: Empty")
-        }
-        #endif
-
-        return .success(HTTPResponse(url: url, headers: headers, status: status, body: body))
+        let response = HTTPResponse(endpoint: endpoint, url: url, headers: headers, status: status, body: body)
+        response.debugPrint()
+        return .success(response)
     }
 
     private static func mapToTransportError(_ error: Error?) -> TransportError {

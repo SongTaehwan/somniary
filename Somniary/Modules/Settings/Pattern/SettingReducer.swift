@@ -83,6 +83,9 @@ fileprivate func reduceSystemInternalIntent(
     case .logoutResponse(let response):
         if case .failure(let error) = response {
             let resolution = env.useCaseResolutionResolver.resolve(error)
+            #if DEBUG
+            resolution.debugPrint()
+            #endif
             return apply(resolution, state: state)
         }
 
@@ -90,12 +93,28 @@ fileprivate func reduceSystemInternalIntent(
             .logEvent("Redirect to login flow"),
             .route(.finishFlow)
         ])
-    case .profileResponse:
+    case .profileResponse(let response):
         // TODO: Update state with profile
+        if case .failure(let error) = response {
+            let resolution = env.useCaseResolutionResolver.resolve(error)
+            #if DEBUG
+            resolution.debugPrint()
+            #endif
+            return apply(resolution, state: state)
+        }
+
         return (state, [
             .logEvent("Store fetched profile")
         ])
-    case .profileUpdateResponse:
+    case .profileUpdateResponse(let response):
+        if case .failure(let error) = response {
+            let resolution = env.useCaseResolutionResolver.resolve(error)
+            #if DEBUG
+            resolution.debugPrint()
+            #endif
+            return apply(resolution, state: state)
+        }
+
         return (state, [
             .logEvent("Update profile done")
         ])
@@ -152,9 +171,11 @@ fileprivate func apply(
     case .updateApp(message: let message, _):
         newState.errorMessage = message
         effects += [.toast(message)]
+
     case .reauth(mode: let mode, message: let message, _):
         newState.errorMessage = message
         effects += [.toast(message)]
+
     case .accessDenied(message: let message, _):
         newState.errorMessage = message
         effects += [.toast(message)]
