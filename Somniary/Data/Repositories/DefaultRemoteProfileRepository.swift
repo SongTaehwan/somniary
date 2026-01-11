@@ -167,15 +167,27 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
     }
 
     private func handleTask<T>(_ task: Task<Result<T, PortFailure<ProfileBoundaryError>>, any Error>) async -> Result<T, PortFailure<ProfileBoundaryError>> {
-        return await Result<T, PortFailure<ProfileBoundaryError>>.catching {
+        let taskResult = await Result<T, PortFailure<ProfileBoundaryError>>.catching {
             try await task.value.get()
         } mapError: { error in
             if let _ = error as? CancellationError {
                 return .system(.dependencyUnavailable(details: "cancelled"))
             }
 
+            if let boundaryError = error as? PortFailure<ProfileBoundaryError> {
+                return boundaryError
+            }
+
             return .system(.dependencyUnavailable(details: "Task.value failed: \(error.localizedDescription)"))
         }
+
+        #if DEBUG
+        if case .failure(let portFailure) = taskResult {
+            portFailure.debugPrint()
+        }
+        #endif
+
+        return taskResult
     }
 
     private func persistAndCache(dto: NetProfile.Get.Response) {
@@ -183,12 +195,69 @@ final class DefaultRemoteProfileRepository: RemoteProfileRepository {
         setInMemoryCached(dto.toDomain(), savedAt: Date())
     }
 
-    // TODO: Domain error mapping
     private func mapToDomainError(_ error: Error) -> PortFailure<ProfileBoundaryError> {
         guard let datasourceError = error as? DataSourceError else {
-            return .system(.internalInvariantViolation(reason: "Unexpected: \(error.localizedDescription)"))
+            return .system(.internalInvariantViolation(reason: "Unhandled error: \(error)"))
         }
 
-        fatalError()
+        switch datasourceError {
+        case .transport(let transportError):
+            switch transportError {
+            case .cancelled:
+                return .system(.dependencyUnavailable(details: "cancelled"))
+            case .network(_), .tls, .unknown:
+                return .system(.dependencyUnavailable(details: "network error"))
+            case .requestBuildFailed:
+                return .system(.contractViolation(details: "Failed to build URL request"))
+            }
+        case .unauthorized(let unauthorizedReason):
+            switch unauthorizedReason {
+            case .tokenExpired:
+                return .boundary(.auth(.authRequired(reason: .accessTokenExpired)))
+            case .invalidToken:
+                return .boundary(.auth(.authRequired(reason: .accessTokenInvalid)))
+            case .unauthorized:
+                return .boundary(.auth(.authRequired(reason: .unknownUnauthorized)))
+            }
+        case .forbidden(let forbiddenReason):
+            switch forbiddenReason {
+            case .roleDenied:
+                return .boundary(.auth(.permissionDenied(reason: .roleDenied)))
+            case .insufficientScope:
+                return .boundary(.auth(.permissionDenied(reason: .insufficientScope)))
+            case .resourceForbidden:
+                return .boundary(.auth(.permissionDenied(reason: .resourceForbidden)))
+            case .forbidden:
+                return .boundary(.auth(.permissionDenied(reason: .unknownForbidden)))
+            }
+        case .resource(let resourceReason):
+            switch resourceReason {
+            case .notSingular:
+                return .system(.contractViolation(details: "Not Singlular"))
+            case .conflict:
+                return .system(.contractViolation(details: "Conflict"))
+            case .notFound:
+                // 응답을 기대하는데 없는 경우에 해당
+                return .system(.contractViolation(details: "Not Found"))
+            }
+        case .client(let clientReason):
+            // 요청에 대한 계약 위반으로 간주
+            return .system(.contractViolation(details: "HTTP 4xx: \(clientReason)"))
+        case .server(let serverReason):
+            // 의존성 실패로 간주
+            return .system(.dependencyUnavailable(details: "internal server error: \(serverReason)"))
+        case .response(let responseReason):
+            // 응답에 대한 계약 위반으로 간주
+            switch responseReason {
+            case .emptyResponse:
+                return .system(.contractViolation(details: "Empty Response"))
+            case .invalidPayload:
+                return .system(.contractViolation(details: "Invalid Payload"))
+            case .decodingFailed:
+                return .system(.contractViolation(details: "decodingFailed"))
+            }
+        case .invariantViolation(let reason):
+            return .system(.internalInvariantViolation(reason: reason))
+        }
     }
 }

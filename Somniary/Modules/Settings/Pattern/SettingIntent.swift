@@ -23,8 +23,8 @@ enum SettingIntent: Equatable {
 
     enum SystemInternalIntent: Equatable {
         case logoutResponse(Result<VoidResponse, LogoutUseCaseError>)
-        case profileUpdateResponse
-        case profileResponse
+        case profileUpdateResponse(Result<UserProfile, UpdateProfileUseCaseError>)
+        case profileResponse(Result<UserProfile, GetProfileUseCaseError>)
     }
 
     // Lifecycle(View)

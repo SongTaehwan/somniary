@@ -18,6 +18,12 @@ struct GetProfileUseCase {
         let result = await repository.getProfile(policy: policy)
             .mapPortFailureToUseCaseError(contract: GetProfileContractError.self, classifyAsContract: classifyAsContract(_:))
 
+        #if DEBUG
+        if case .failure(let failure) = result {
+            failure.debugPrint()
+        }
+        #endif
+
         return result
     }
 
@@ -32,6 +38,8 @@ struct GetProfileUseCase {
 
     private func classifyAuthError(_ error: AuthDomainError) -> GetProfileContractError? {
         switch error {
+        case .authRequired(reason: .accessTokenExpired):
+            return .precondition(.loginRequired)
         default:
             return nil
         }
