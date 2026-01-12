@@ -170,8 +170,13 @@ final class LoginViewModel: ViewModelType {
     }
 
     private func handle(_ intent: LoginIntent) {
-        let (newState, plans) = combinedReducer(state: state, intent: intent, env: environment.reducerEnvironment)
-        self.state = newState
+        let (updatedState, plans) = combinedReducer(state: state, intent: intent, env: environment.reducerEnvironment)
+
+        if self.state != updatedState {
+            Task { @MainActor in
+                self.state = updatedState
+            }
+        }
 
         // 네비게이션, UI 출력 관련 output 은 VM 에 위임
         for plan in plans {
