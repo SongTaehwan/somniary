@@ -33,7 +33,9 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
         let (updatedState, plans) = combinedSettingReducer(state: self.state, intent: intent, env: environment.reducerEnv)
 
         if self.state != updatedState {
-            self.state = updatedState
+            Task { @MainActor in
+                self.state = updatedState
+            }
         }
 
         for plan in plans {
