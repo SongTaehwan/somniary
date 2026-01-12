@@ -32,6 +32,7 @@
 		E413834F2E713AE400F9A185 /* Somniary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Somniary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E413835C2E713AE400F9A185 /* SomniaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E41383662E713AE400F9A185 /* SomniaryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E47F0A162F14CD7000EC0DC0 /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 		E49E579D2EB90B0200C686C3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E4D3F3A52E97472E0044E7CA /* Somniary.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Somniary.xctestplan; sourceTree = "<group>"; };
 		E4F501F62E78001A001E0B58 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -112,6 +113,7 @@
 			isa = PBXGroup;
 			children = (
 				E49E579D2EB90B0200C686C3 /* README.md */,
+				E47F0A162F14CD7000EC0DC0 /* swiftgen.yml */,
 				E4D3F3A52E97472E0044E7CA /* Somniary.xctestplan */,
 				E4F50A902E8E63D6001E0B58 /* Config */,
 				E4F501F62E78001A001E0B58 /* .gitignore */,
@@ -139,6 +141,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E41383702E713AE400F9A185 /* Build configuration list for PBXNativeTarget "Somniary" */;
 			buildPhases = (
+				E47F0A202F14CE2300EC0DC0 /* Generate Assets & Font Utilities */,
 				E413834B2E713AE400F9A185 /* Sources */,
 				E413834C2E713AE400F9A185 /* Frameworks */,
 				E413834D2E713AE400F9A185 /* Resources */,
@@ -277,6 +280,30 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E47F0A202F14CE2300EC0DC0 /* Generate Assets & Font Utilities */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/swiftgen.yml",
+			);
+			name = "Generate Assets & Font Utilities";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Somniary/Modules/SharedUI/Assets/Asset+Generated.swift",
+				"$(SRCROOT)/Somniary/Modules/SharedUI/Assets/Font+Generated.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nexport PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\n\nwhich swiftgen || { echo \"swiftgen not found\"; exit 1; }\nswiftgen --version\n\nswiftgen config run --config \"${SRCROOT}/swiftgen.yml\" --verbose\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E413834B2E713AE400F9A185 /* Sources */ = {
