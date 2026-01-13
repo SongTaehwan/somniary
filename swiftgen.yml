@@ -39,12 +39,15 @@
 ## For more info, use `swiftgen config doc` to open the full documentation on GitHub.
 ## https://github.com/SwiftGen/SwiftGen/tree/6.6.3/Documentation/
 
+input_dir: Somniary/Resources/
+output_dir: Somniary/Modules/SharedUI/Assets
+
 xcassets:
   inputs:
-    - Somniary/Resources/Assets.xcassets
+    - Assets.xcassets
   outputs:
     - templateName: swift5
-      output: Somniary/Modules/SharedUI/Assets/Asset+Generated.swift
+      output: Asset+Generated.swift
       params:
         forceProvidesNamespaces: true
         publicAccess: true
@@ -52,10 +55,11 @@ xcassets:
 
 fonts:
   inputs:
-    - Somniary/Resources/Fonts
+    - Fonts
   outputs:
     - templateName: swift5
-      output: Somniary/Modules/SharedUI/Assets/Font+Generated.swift
+      output: Font+Generated.swift
       params:
         enumName: FontFamily
         publicAccess: true
+        fontAliasName: AppFont
