@@ -12,38 +12,44 @@ struct LoginView: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 20) {
-                Image(systemName: "moon.fill")
-                    .resizable()
-                    .renderingMode(.template)
-                    .frame(width: 100, height: 100)
-                    .foregroundStyle(.yellow)
+        VStack(spacing: 30) {
+            Image(systemName: "moon.fill")
+                .resizable()
+                .renderingMode(.template)
+                .frame(width: 100, height: 100)
+                .foregroundStyle(.yellow)
 
-                Text("Welcome!")
-                    .font(.title)
-                    .fontWeight(.bold)
+            SignInWithAppleButton(.signIn) { request in
+                viewModel.configureAppleSignInRequest(request)
+            } onCompletion: { result in
+                viewModel.handleAppleSignInCompletion(result)
             }
+            .signInWithAppleButtonStyle(.white)
+            .frame(height: 56)
+            .cornerRadius(12)
 
-            VStack(spacing: 12) {
-                SignInWithAppleButton(.signIn) { request in
-                    viewModel.configureAppleSignInRequest(request)
-                } onCompletion: { result in
-                    viewModel.handleAppleSignInCompletion(result)
-                }
-                .signInWithAppleButtonStyle(.black)
-                .frame(maxHeight: 56)
-                .cornerRadius(12)
+            HStack {
+                Text("처음 방문 하셨나요?")
+                    .font(.title2)
+                    .foregroundStyle(Asset.Colors.Text.secondary.swiftUIColor)
 
-                BaseButton("구글 계정으로 로그인") {
-                    viewModel.send(.user(.googleSignInTapped))
+                BaseButton("회원 가입") {
+                    viewModel.send(.user(.signUpTapped))
                 }
-                .somniaryButtonStyle(.primary)
+                .somniaryTextButtonStyle(.init(
+                    typography: .init(
+                        font: .title2,
+                        foregroundColor: Asset.Colors.primary.swiftUIColor
+                    ),
+                    buttonSize: .fit
+                ))
             }
 
             HStack(spacing: 12) {
                 Separator()
                 Text("OR")
+                    .font(.caption1)
+                    .foregroundStyle(Asset.Colors.Text.tertiary.swiftUIColor)
                     .opacity(0.25)
                 Separator()
             }
@@ -53,26 +59,17 @@ struct LoginView: View {
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
 
+            Spacer()
+
             BaseButton("로그인") {
                 viewModel.send(.user(.loginTapped))
             }
             .somniaryButtonStyle(.primary)
             .disabled(viewModel.email.isValidEmail == false)
-
-            Separator()
-
-            HStack {
-                Text("처음 방문 하셨나요?")
-                BaseButton("회원 가입") {
-                    viewModel.send(.user(.signUpTapped))
-                }
-                .somniaryTextButtonStyle(.primary)
-            }
-
-            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
+        .background(Asset.Colors.Background.primary.swiftUIColor)
         .onReceive(viewModel.uiEvent) { event in
             switch event {
             case .toast(let message):
