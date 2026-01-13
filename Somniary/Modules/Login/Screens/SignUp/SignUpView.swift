@@ -11,10 +11,16 @@ struct SignUpView: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
-        VStack {
-            Spacer()
+        VStack(spacing: 24) {
+            VStack(alignment: .leading) {
+                Text("반가워요,")
+                Text("계정으로 이메일을 입력해주세요")
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.heading1)
+            .foregroundStyle(Asset.Colors.Text.primary.swiftUIColor)
 
-            VStack {
+            VStack(spacing: 8) {
                 TextInput("이메일 입력해주세요.", text: $viewModel.email)
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
@@ -22,9 +28,17 @@ struct SignUpView: View {
                     .disabled(viewModel.state.otpCodeRequired)
 
                 if viewModel.state.otpCodeRequired {
-                    TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.otpCode)
-                        .keyboardType(.numberPad)
-                        .maxLength(text: $viewModel.otpCode, limit: 6)
+                    VStack {
+                        TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.otpCode)
+                            .keyboardType(.numberPad)
+                            .maxLength(text: $viewModel.otpCode, limit: 6)
+
+                        Text("발송된 OTP 번호를 입력해주세요")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.caption1)
+                            .foregroundStyle(Asset.Colors.Text.secondary.swiftUIColor)
+                            .padding(.leading, 8)
+                    }
                 }
 
                 if let errorMessage = viewModel.state.errorMessage {
@@ -32,11 +46,10 @@ struct SignUpView: View {
                         .typography(.errorMessage)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 8)
-                        .padding(.top, 6)
+                        .padding(.top, 8)
                 }
             }
 
-            Spacer()
             Spacer()
 
             if viewModel.state.otpCodeRequired == false {
@@ -54,11 +67,13 @@ struct SignUpView: View {
                 .somniaryButtonStyle(.primary)
                 .disabled(viewModel.state.canSubmit == false)
             }
-
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.top, 50)
+        .background(Asset.Colors.Background.primary.swiftUIColor)
         .navigationTitle("회원가입")
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 
