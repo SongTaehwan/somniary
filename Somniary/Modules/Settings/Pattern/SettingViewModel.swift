@@ -15,6 +15,8 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
 
     private let environment: SettingEnvironment
 
+    @Published var isToggle = false
+
     init(coordinator: Coordinator, executor: Executor, environment: SettingEnvironment) {
         self.environment = environment
         super.init(coordinator: coordinator, executor: executor, initialState: State())
@@ -22,6 +24,16 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
     }
 
     private func binding() {
+        self.$isToggle
+            .sink { value in
+                if value {
+                    self.handle(.user(.notificationOn))
+                } else {
+                    self.handle(.user(.notificationOff))
+                }
+            }
+            .store(in: &cancellables)
+
         self.intents
             .sink { intent in
                 self.handle(intent)

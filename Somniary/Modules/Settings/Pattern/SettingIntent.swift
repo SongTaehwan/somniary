@@ -17,6 +17,8 @@ enum SettingIntent: Equatable {
         case notificationSettingTapped
         case logoutTapped
         case profileEditConfirmTapped
+        case notificationOff
+        case notificationOn
     }
 
     enum SystemExtenralIntent: Equatable {}

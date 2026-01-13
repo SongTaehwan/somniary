@@ -27,26 +27,27 @@ public enum Asset {
   public static let accentColor = ColorAsset(name: "AccentColor")
   public enum Colors {
     public enum Background {
-      public static let primary = ColorAsset(name: "Colors/Background/Primary")
-      public static let secondary = ColorAsset(name: "Colors/Background/secondary")
-      public static let tertiary = ColorAsset(name: "Colors/Background/tertiary")
+      public static let primary = ColorAsset(name: "Colors/background/primary")
+      public static let secondary = ColorAsset(name: "Colors/background/secondary")
+      public static let tertiary = ColorAsset(name: "Colors/background/tertiary")
     }
-    public static let black = ColorAsset(name: "Colors/Black")
+    public static let black = ColorAsset(name: "Colors/black")
     public enum Button {
       public enum Background {
-        public static let disabled = ColorAsset(name: "Colors/Button/background/disabled")
-        public static let outline = ColorAsset(name: "Colors/Button/background/outline")
-        public static let primary = ColorAsset(name: "Colors/Button/background/primary")
+        public static let disabled = ColorAsset(name: "Colors/button/background/disabled")
+        public static let outline = ColorAsset(name: "Colors/button/background/outline")
+        public static let primary = ColorAsset(name: "Colors/button/background/primary")
       }
     }
-    public static let primary = ColorAsset(name: "Colors/Primary")
+    public static let primary = ColorAsset(name: "Colors/primary")
     public enum Text {
-      public static let disabled = ColorAsset(name: "Colors/Text/disabled")
-      public static let primary = ColorAsset(name: "Colors/Text/primary")
-      public static let secondary = ColorAsset(name: "Colors/Text/secondary")
-      public static let warning = ColorAsset(name: "Colors/Text/warning")
+      public static let disabled = ColorAsset(name: "Colors/text/disabled")
+      public static let primary = ColorAsset(name: "Colors/text/primary")
+      public static let secondary = ColorAsset(name: "Colors/text/secondary")
+      public static let tertiary = ColorAsset(name: "Colors/text/tertiary")
+      public static let warning = ColorAsset(name: "Colors/text/warning")
     }
-    public static let white = ColorAsset(name: "Colors/White")
+    public static let white = ColorAsset(name: "Colors/white")
   }
   public enum Icons {
     public static let congret = ImageAsset(name: "Icons/congret")

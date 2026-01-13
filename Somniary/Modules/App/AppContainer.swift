@@ -104,7 +104,27 @@ extension AppContainer: SettingCoordinatorDependency {
         let authRepository = DefaultRemoteAuthRepository(dataSource: self.authDataSource)
         let logoutUsecase = LogoutUseCase(authRepository: authRepository)
 
-        let reducerEnv = SettingReducerEnvironment(useCaseResolutionResolver: ChainedUseCaseResolutionResolver(partials: [])) {
+        // 프로필 조회 에러 메시지
+        let profileErrorMessageOverride = TypedPartialUseCaseResolutionResolver<GetProfileContractError, ProfileBoundaryError> { error in
+            switch error {
+            case .contract(.precondition(.loginRequired)):
+                return .reauth(mode: .normal, message: "자동 인증")
+            default:
+                return nil
+            }
+        }
+
+        //  프로필 업데이트 에러 메시지
+        let updateProfileErrorMessageOverride = TypedPartialUseCaseResolutionResolver<UpdateProfileConractError, ProfileBoundaryError> { error in
+            switch error {
+            case .contract(.precondition(.loginRequired)):
+                return .reauth(mode: .forceLogout, message: "인증 정보가 유효하지 않습니다.")
+            default:
+                return nil
+            }
+        }
+
+        let reducerEnv = SettingReducerEnvironment(useCaseResolutionResolver: ChainedUseCaseResolutionResolver(partials: [profileErrorMessageOverride, updateProfileErrorMessageOverride])) {
             UUID()
         }
 

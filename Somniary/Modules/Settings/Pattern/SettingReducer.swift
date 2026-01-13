@@ -63,6 +63,10 @@ fileprivate func reduceUserIntent(
             .make(.updateProfile(id: profile.id, name: profile.name, email: profile.email)),
             .logEvent("End updating profile")
         ])
+    case .notificationOff:
+        return (state, [.logEvent("Notification alarm off")])
+    case .notificationOn:
+        return (state, [.logEvent("Notification alarm on")])
     }
 }
 
