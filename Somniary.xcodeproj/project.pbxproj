@@ -33,6 +33,7 @@
 		E413835C2E713AE400F9A185 /* SomniaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E41383662E713AE400F9A185 /* SomniaryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SomniaryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E47F0A162F14CD7000EC0DC0 /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
+		E47F0C2D2F162B7800EC0DC0 /* mise.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = mise.toml; sourceTree = "<group>"; };
 		E49E579D2EB90B0200C686C3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E4D3F3A52E97472E0044E7CA /* Somniary.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Somniary.xctestplan; sourceTree = "<group>"; };
 		E4F501F62E78001A001E0B58 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -112,6 +113,7 @@
 		E41383462E713AE400F9A185 = {
 			isa = PBXGroup;
 			children = (
+				E47F0C2D2F162B7800EC0DC0 /* mise.toml */,
 				E49E579D2EB90B0200C686C3 /* README.md */,
 				E47F0A162F14CD7000EC0DC0 /* swiftgen.yml */,
 				E4D3F3A52E97472E0044E7CA /* Somniary.xctestplan */,
@@ -290,18 +292,15 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/swiftgen.yml",
 			);
 			name = "Generate Assets & Font Utilities";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/Somniary/Modules/SharedUI/Assets/Asset+Generated.swift",
-				"$(SRCROOT)/Somniary/Modules/SharedUI/Assets/Font+Generated.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nexport PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\n\nwhich swiftgen || { echo \"swiftgen not found\"; exit 1; }\nswiftgen --version\n\nswiftgen config run --config \"${SRCROOT}/swiftgen.yml\" --verbose\n";
+			shellScript = "set -euo pipefail\n\nexport PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n\n# ---- Guard: mise must exist ----\nif ! command -v mise >/dev/null 2>&1; then\n  echo \"[SwiftGen] ERROR: 'mise' not found in PATH.\"\n  echo \"[SwiftGen] Install with: brew install mise\"\n  exit 1\nfi\n\n# ---- Guard: swiftgen must be configured via mise ----\nif ! mise exec -- command -v swiftgen >/dev/null 2>&1; then\n  echo \"[SwiftGen] ERROR: 'swiftgen' is not available via mise for this project.\"\n  echo \"[SwiftGen] Check mise.toml in project root\"\n  exit 1\nfi\n\nmise exec -- swiftgen config run --config \"${SRCROOT}/swiftgen.yml\" --verbose\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -477,6 +476,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FCQD35AW5P;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Somniary/Resources/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -513,6 +513,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FCQD35AW5P;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Somniary/Resources/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
