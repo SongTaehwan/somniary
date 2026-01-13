@@ -12,39 +12,45 @@ struct SettingEntryView: View {
 
     var body: some View {
         VStack {
-            Button {
-                viewModel.send(.user(.profileTapped))
-            } label: {
-                HStack {
-                    Image(systemName: viewModel.state.profile?.thumbnail ?? "person.crop.circle")
-                        .resizable()
-                        .renderingMode(.original)
-                        .frame(width: 50, height: 50)
-
-                    VStack(alignment: .leading) {
-                        Text(viewModel.state.profile?.name ?? "홍길동")
-                        Text(viewModel.state.profile?.email ?? "aldkjf@gmail.com")
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-
-            List {
-                Button {
-                    viewModel.send(.user(.notificationSettingTapped))
-                } label: {
-                    Text("알림 설정")
-                }
-
+            HStack {
+                Text(viewModel.state.profile?.email ?? "aldkjf@gmail.com")
+                    .font(.title2)
+                Spacer()
                 Button {
                     viewModel.send(.user(.logoutTapped))
                 } label: {
                     Text("로그아웃")
+                        .font(.caption1)
+                        .foregroundStyle(Asset.Colors.Text.tertiary.swiftUIColor)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .strokeBorder(Asset.Colors.Button.Background.outline.swiftUIColor, lineWidth: 1)
+                        }
                 }
             }
-            .listStyle(.plain)
+
+            Separator()
+                .padding(.vertical, 20)
+
+            HStack {
+                Text("알림 설정")
+                    .font(.title2)
+                Spacer()
+                Toggle("", isOn: $viewModel.isToggle)
+                    .foregroundStyle(Asset.Colors.primary.swiftUIColor)
+                    .toggleStyle(ScalableSwitchToggleStyle(width: 40, height: 24))
+            }
+
+            Separator()
+                .padding(.vertical, 20)
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.horizontal, 20)
+        .padding(.top, 50)
+        .background(Asset.Colors.Background.primary.swiftUIColor)
+        .foregroundStyle(Asset.Colors.Text.primary.swiftUIColor)
         .onAppear {
             viewModel.send(.lifecycle(.appeared))
         }
