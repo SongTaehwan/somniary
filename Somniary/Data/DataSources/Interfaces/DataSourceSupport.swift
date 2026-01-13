@@ -48,7 +48,7 @@ extension DataSourceSupport {
 
         // JSON 디코딩
         do {
-            let dto = try JSONDecoder().decode(T.self, from: data)
+            let dto = try JSONDecoder.shared.decode(T.self, from: data)
             return .success(dto)
         } catch {
             #if DEBUG
@@ -71,7 +71,7 @@ extension DataSourceSupport {
         }
 
         // 에러 응답 디코딩
-        guard let errorDto = try? JSONDecoder().decode(NetError.self, from: data) else {
+        guard let errorDto = try? JSONDecoder.shared.decode(NetError.self, from: data) else {
             let error = mapHTTPStatusToError(failure.status)
             #if DEBUG
             print("📄 [Decoding Failed]: \(error)")

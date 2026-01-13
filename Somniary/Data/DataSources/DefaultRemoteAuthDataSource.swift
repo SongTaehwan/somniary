@@ -12,7 +12,6 @@ import Foundation
 /// 2. 전송 계층 에러를 data source 에러로 매핑
 struct DefaultRemoteAuthDataSource: RemoteAuthDataSource, DataSourceSupport {
     private let client: any HTTPNetworking<AuthEndpoint>
-    private let decorder = JSONDecoder()
 
     init(client: any HTTPNetworking<AuthEndpoint>) {
         self.client = client

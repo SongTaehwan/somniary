@@ -28,11 +28,19 @@ extension UserEndpoint {
     }
 
     var headers: HTTPHeaders? {
-        return [
+        var header = [
             "apiKey": AppInfo.shared.domainClientKey,
             "Content-Type": "application/json",
-            "Authorization": "Bearer \(TokenRepository.shared.getAccessToken() ?? "")"
+            "Authorization": "Bearer \(TokenRepository.shared.getAccessToken() ?? "")",
         ]
+
+        switch self {
+        case .getProfile, .getProfileById:
+            header.updateValue("application/vnd.pgrst.object+json", forKey: "Accept")
+            return header
+        case .update:
+            return header
+        }
     }
 
     var queryItems: [URLQueryItem]? {
