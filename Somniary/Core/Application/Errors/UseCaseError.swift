@@ -75,7 +75,7 @@ extension UseCaseError {
             case .outOfContract(let error):
                 return """
                 ╔══════════════════════════════════════════════════════════════
-                ║ 💥 \(UseCaseError.self) Details
+                ║ 💥 \(UseCaseError.self)
                 ╠══════════════════════════════════════════════════════════════
                 ║ 📚 Layer      : Application
                 ║ 📞 Caller     : \(caller)

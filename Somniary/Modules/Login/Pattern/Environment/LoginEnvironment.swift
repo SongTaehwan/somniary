@@ -13,3 +13,9 @@ struct LoginEnvironment {
     let reducerEnvironment: LoginReducerEnvironment
     let crypto: CryptoProviding
 }
+
+struct LoginReducerEnvironment {
+    // TODO: 정책 추가
+    let useCaseResolutionResolver: any UseCaseResolutionResolving
+    let makeRequestId: () -> UUID
+}

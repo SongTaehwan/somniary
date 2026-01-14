@@ -24,6 +24,12 @@ struct RequestOtpUseCase {
             .mapPortFailureToUseCaseError(contract: RequestOtpContractError.self, classifyAsContract: classifyAsContract(_:))
             .map { VoidResponse() }
 
+        #if DEBUG
+        if case .failure(let failure) = result {
+            failure.debugPrint()
+        }
+        #endif
+
         return result
     }
 

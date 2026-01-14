@@ -23,6 +23,12 @@ struct LogoutUseCase {
             }
             .map { _ in VoidResponse() }
 
+        #if DEBUG
+        if case .failure(let failure) = result {
+            failure.debugPrint()
+        }
+        #endif
+
         TokenRepository.shared.clear()
 
         return result

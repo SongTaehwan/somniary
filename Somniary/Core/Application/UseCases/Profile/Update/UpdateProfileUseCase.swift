@@ -24,6 +24,12 @@ struct UpdateProfileUseCase {
         let result = await repository.updateProfile(.init(id: input.id, name: input.name, email: input.email))
             .mapPortFailureToUseCaseError(contract: UpdateProfileConractError.self, classifyAsContract: classifyAsContract(_:))
 
+        #if DEBUG
+        if case .failure(let failure) = result {
+            failure.debugPrint()
+        }
+        #endif
+
         return result
     }
 

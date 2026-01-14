@@ -68,7 +68,7 @@ extension Typography {
     )
 
     static let errorMessage = Typography(
-        font: .caption,
-        foregroundColor: Color(.systemRed),
+        font: .caption1,
+        foregroundColor: Asset.Colors.Text.warning.swiftUIColor,
     )
 }

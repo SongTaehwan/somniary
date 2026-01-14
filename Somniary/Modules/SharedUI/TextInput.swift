@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TextInput: View {
-
+    @FocusState private var isFocued
     @Binding var text: String
     let placeholder: String
 
@@ -18,13 +18,19 @@ struct TextInput: View {
     }
 
     var body: some View {
-        TextField(placeholder, text: $text)
-            .padding(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.gray, lineWidth: 1)
-                    .cornerRadius(16)
-            )
+        TextField("", text: $text, prompt: Text(placeholder)
+            .font(.title2)
+            .foregroundStyle(Asset.Colors.Text.secondary.swiftUIColor)
+        )
+        .padding(20)
+        .font(.title2)
+        .foregroundStyle(Asset.Colors.Text.primary.swiftUIColor)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isFocued ? Asset.Colors.primary.swiftUIColor : Asset.Colors.Text.secondary.swiftUIColor, lineWidth: 1)
+                .cornerRadius(16)
+        )
+        .focused($isFocued)
     }
 }
 

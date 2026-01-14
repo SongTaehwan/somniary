@@ -24,6 +24,12 @@ struct LoginUseCase {
         let result = await repository.verify(email: input.email, otpCode: input.otpCode, idempotencyKey: nil)
             .mapPortFailureToUseCaseError(contract: LoginContractError.self, classifyAsContract: classifyAsContract)
 
+        #if DEBUG
+        if case .failure(let failure) = result {
+            failure.debugPrint()
+        }
+        #endif
+
         if case let .success(entity) = result {
             try? TokenRepository.shared.updateToken(entity)
             return result.map { _ in VoidResponse() }

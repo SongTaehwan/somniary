@@ -13,7 +13,8 @@ struct LoginEffectPlan: EffectPlan {
         /// API effect
         case requestLoginCode(email: String, requestId: UUID)
         case requestSignupCode(email: String, requestId: UUID)
-        case verify(email: String, otpCode: String, requestId: UUID)
+        case login(email: String, otpCode: String, requestId: UUID)
+        case signup(email: String, otpCode: String, requestId: UUID)
 
         /// SDK
         case authenticateWithApple(credential: AppleCredential, requestId: UUID)
@@ -108,7 +109,7 @@ extension LoginEffectPlan {
         )
     }
 
-    static func verify(
+    static func login(
         email: String,
         otpCode: String,
         requestId: UUID,
@@ -116,7 +117,25 @@ extension LoginEffectPlan {
         timeout: Int = 0
     ) -> Self {
         return .make(
-            .verify(
+            .login(
+                email: email,
+                otpCode: otpCode,
+                requestId: requestId
+            ),
+            retry: retry,
+            timeout: timeout
+        )
+    }
+
+    static func signup(
+        email: String,
+        otpCode: String,
+        requestId: UUID,
+        retry: Int = 0,
+        timeout: Int = 0
+    ) -> Self {
+        return .make(
+            .signup(
                 email: email,
                 otpCode: otpCode,
                 requestId: requestId

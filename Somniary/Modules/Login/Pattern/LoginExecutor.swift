@@ -33,7 +33,7 @@ final class LoginExecutor: EffectExecuting {
                 let result = await otpUseCase.execute(.init(email: email))
 
                 guard !Task.isCancelled else { return }
-                await MainActor.run { send(.systemInternal(.loginResponse(result))) }
+                await MainActor.run { send(.systemInternal(.requestOtpResponse(result))) }
             }
 
         case let .requestSignupCode(email: email, requestId: requestId):
@@ -46,9 +46,10 @@ final class LoginExecutor: EffectExecuting {
                 let result = await otpUseCase.execute(.init(email: email))
 
                 guard !Task.isCancelled else { return }
-                await MainActor.run { send(.systemInternal(.signupResponse(result))) }
+                await MainActor.run { send(.systemInternal(.requestOtpResponse(result))) }
             }
-        case let .verify(email: email, otpCode: otpCode, requestId: requestId):
+
+        case let .login(email: email, otpCode: otpCode, requestId: requestId):
             tasks[requestId]?.cancel()
             tasks[requestId] = Task {
                 defer {
@@ -58,7 +59,20 @@ final class LoginExecutor: EffectExecuting {
                 let result = await loginUseCase.execute(.init(email: email, otpCode: otpCode))
 
                 guard !Task.isCancelled else { return }
-                await MainActor.run { send(.systemInternal(.verifyResponse(result))) }
+                await MainActor.run { send(.systemInternal(.loginResponse(result))) }
+            }
+
+        case let .signup(email: email, otpCode: otpCode, requestId: requestId):
+            tasks[requestId]?.cancel()
+            tasks[requestId] = Task {
+                defer {
+                    tasks[requestId] = nil
+                }
+
+                let result = await loginUseCase.execute(.init(email: email, otpCode: otpCode))
+
+                guard !Task.isCancelled else { return }
+                await MainActor.run { send(.systemInternal(.signupResponse(result))) }
             }
 
         case .logEvent(let message):
@@ -74,7 +88,7 @@ final class LoginExecutor: EffectExecuting {
                 let result = await loginUseCase.execute(credential)
 
                 guard !Task.isCancelled else { return }
-                await MainActor.run { send(.systemInternal(.verifyResponse(result))) }
+                await MainActor.run { send(.systemInternal(.loginResponse(result))) }
             }
         default:
             break
