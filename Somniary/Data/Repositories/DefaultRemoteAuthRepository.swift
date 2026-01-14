@@ -27,6 +27,12 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
         let result = await self.dataSource.requestOtpCode(payload: .init(email: email, createUser: createUser), idempotencyKey: nil)
             .mapError(mapToDomainError(_:))
 
+        #if DEBUG
+        if case .failure(let portFailure) = result {
+            portFailure.debugPrint()
+        }
+        #endif
+
         return result
     }
 
@@ -37,6 +43,12 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
             .map { dto in
                 TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
             }
+
+        #if DEBUG
+        if case .failure(let portFailure) = result {
+            portFailure.debugPrint()
+        }
+        #endif
 
         return result
     }
@@ -49,12 +61,24 @@ struct DefaultRemoteAuthRepository: RemoteAuthRepository {
                 TokenEntity(accessToken: dto.accessToken, refreshToken: dto.refreshToken)
             }
 
+        #if DEBUG
+        if case .failure(let portFailure) = result {
+            portFailure.debugPrint()
+        }
+        #endif
+
         return result
     }
 
     func logout() async -> Result<Void, PortFailure<IdentityBoundaryError>> {
         let result = await self.dataSource.logout()
             .mapError(mapToDomainError(_:))
+
+        #if DEBUG
+        if case .failure(let portFailure) = result {
+            portFailure.debugPrint()
+        }
+        #endif
 
         return result
     }
