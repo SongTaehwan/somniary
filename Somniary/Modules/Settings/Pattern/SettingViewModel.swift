@@ -5,6 +5,7 @@
 //  Created by 송태환 on 12/20/25.
 //
 
+import Foundation
 import Combine
 
 final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffectPlan, SettingIntent, SettingRoute> {
@@ -25,6 +26,8 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
 
     private func binding() {
         self.$isToggle
+            .dropFirst()
+            .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
             .sink { value in
                 if value {
                     self.handle(.user(.notificationOn))
@@ -63,7 +66,6 @@ final class SettingViewModel: BaseViewModel<SettingViewModel.State, SettingEffec
             case .finishFlow:
                 self.coordinator.finish()
             default:
-                print("Execute: \(plan.type)")
                 executor.perform(plan, send: self.send)
             }
         }
