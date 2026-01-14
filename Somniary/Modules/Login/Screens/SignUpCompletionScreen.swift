@@ -1,5 +1,5 @@
 //
-//  SignUpCompletionView.swift
+//  SignUpCompletionScreen.swift
 //  Somniary
 //
 //  Created by 송태환 on 9/18/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SignUpCompletionView: View {
+struct SignUpCompletionScreen: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
@@ -42,5 +42,5 @@ struct SignUpCompletionView: View {
 }
 
 #Preview {
-    SignUpCompletionView(viewModel: AppContainer.shared.makeLoginViewModel(nil))
+    SignUpCompletionScreen(viewModel: AppContainer.shared.makeLoginViewModel(nil))
 }
