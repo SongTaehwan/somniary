@@ -20,7 +20,6 @@ final class LoginViewModel: ViewModelType {
         enum Requirement {
             case email
             case otpCode
-            case errorHandling
         }
 
         var requirement = Requirement.email
@@ -118,7 +117,7 @@ final class LoginViewModel: ViewModelType {
     private func bindButtons() {
         // 로그인 버튼 처리
         let submitLoginTapped = intents.partition {
-            $0 == .user(.submitLogin) && self.state.isLoading == false
+            $0 == .user(.submitLogin)
         }
 
         submitLoginTapped.included
@@ -134,7 +133,7 @@ final class LoginViewModel: ViewModelType {
 
         // 회원가입 버튼 처리
         let submitSignupTapped = submitLoginTapped.excluded.partition {
-            $0 == .user(.submitSignup) && self.state.isLoading == false
+            $0 == .user(.submitSignup)
         }
 
         submitSignupTapped.included
@@ -149,7 +148,9 @@ final class LoginViewModel: ViewModelType {
             .store(in: &cancellables)
 
         // 가입 완료 버튼 처리
-        let signupCompletionTapped = submitLoginTapped.excluded.partition { $0 == .user(.signupCompletionTapped) }
+        let signupCompletionTapped = submitSignupTapped.excluded.partition {
+            $0 == .user(.signupCompletionTapped)
+        }
 
         signupCompletionTapped.included
             .throttle(

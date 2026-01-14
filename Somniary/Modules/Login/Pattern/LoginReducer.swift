@@ -31,25 +31,25 @@ fileprivate func reduceUserIntent(
     case .emailChanged(let text):
         newState.email = text
         newState.errorMessage = nil
-        
         return (newState, [.logEvent("email_changed: \(text)")])
 
     case .otpCodeChanged(let text):
         newState.otpCode = text
         newState.errorMessage = nil
-
         return (newState, [.logEvent("OTP_code_changed: \(text)")])
 
     case .loginTapped:
         guard newState.email.isValidEmail else {
             return (newState, [
                 .logEvent("invalid_email"),
-                .toast("올바른 이메일이 아닙니다.")
+                .toast("이메일 형식이 아닙니다.")
             ])
         }
 
         let requestId = newState.latestRequestId ?? env.makeRequestId()
+        newState.latestRequestId = requestId
         newState.otpCode = ""
+        newState.requirement = .otpCode
 
         return (newState, [
             .logEvent("reset_inputs"),
@@ -61,7 +61,6 @@ fileprivate func reduceUserIntent(
     case .signUpTapped:
         newState.email = ""
         newState.otpCode = ""
-
         return (newState, [
             .logEvent("reset_inputs", level: .debug),
             .updateTextField(email: "", otpCode: ""),
@@ -71,7 +70,7 @@ fileprivate func reduceUserIntent(
 
     case .requestOtpCodeTapped:
         let requestId = newState.latestRequestId ?? env.makeRequestId()
-
+        newState.latestRequestId = requestId
         return (newState, [
             .logEvent("request_otp_verification"),
             .requestSignupCode(email: newState.email, requestId: requestId),
@@ -101,7 +100,7 @@ fileprivate func reduceUserIntent(
 
         return (newState, [
             .logEvent("request_signup"),
-            .verify(
+            .signup(
                 email: newState.email,
                 otpCode: newState.otpCode,
                 requestId: requestId
@@ -122,7 +121,7 @@ fileprivate func reduceUserIntent(
 
         return (newState, [
             .logEvent("request_login"),
-            .verify(
+            .login(
                 email: newState.email,
                 otpCode: newState.otpCode,
                 requestId: requestId
@@ -147,7 +146,7 @@ fileprivate func reduceExternalIntent(
         ])
     case .appleLoginCompleted(.success(let credential)):
         let requestId = newState.latestRequestId ?? env.makeRequestId()
-
+        newState.latestRequestId = requestId
         return (newState, [
             .logEvent("handle_apple_login_result", level: .debug),
             .authenticateWithApple(
@@ -178,7 +177,7 @@ fileprivate func reduceInternalIntent(
     var newState = state
 
     switch intent {
-    case .loginResponse(let result):
+    case .requestOtpResponse(let result):
         newState.isLoading = false
         newState.latestRequestId = nil
 
@@ -186,40 +185,41 @@ fileprivate func reduceInternalIntent(
         case .success:
             newState.requirement = .otpCode
             return (newState,[
-                .logEvent("login_success", level: .debug),
-                .logEvent("navigate_otp_verification"),
-                .route(.navigateOtpVerification)
+                .logEvent("request_otp_code_success", level: .debug)
             ])
 
         case .failure(let error):
-            newState.latestRequestId = nil
             let resolution = env.useCaseResolutionResolver.resolve(error)
             let resolved = apply(resolution, state: state)
             return resolved
         }
+
     case .signupResponse(let result):
         newState.isLoading = false
         newState.latestRequestId = nil
 
         switch result {
         case .success:
-            newState.requirement = .otpCode
             return (newState, [
-                .logEvent("signup_success", level: .debug)
+                .logEvent("sign_up_success", level: .debug),
+                .logEvent("navigate_signup_completion"),
+                .route(.navigateSignupCompletion)
             ])
 
         case .failure(let error):
-            newState.latestRequestId = nil
             let resolution = env.useCaseResolutionResolver.resolve(error)
             let resolved = apply(resolution, state: state)
             return resolved
         }
 
-    case .verifyResponse(let result):
+    case .loginResponse(let result):
+        newState.isLoading = false
+        newState.latestRequestId = nil
+
         switch result {
         case .success:
             return (newState, [
-                .logEvent("otp_verification_success", level: .debug),
+                .logEvent("login_success", level: .debug),
                 .logEvent("navigate_home"),
                 .route(.navigateHome)
             ])
@@ -231,12 +231,6 @@ fileprivate func reduceInternalIntent(
             return resolved
         }
     }
-}
-
-struct LoginReducerEnvironment {
-    // TODO: 정책 추가
-    let useCaseResolutionResolver: any UseCaseResolutionResolving
-    let makeRequestId: () -> UUID
 }
 
 func combinedReducer(
@@ -266,9 +260,6 @@ fileprivate func apply(
 ) -> (state: LoginViewModel.LoginState, effects: [LoginEffectPlan]) {
     var newState = state
     var effects: [LoginEffectPlan] = []
-
-    newState.requirement = .errorHandling
-    newState.isLoading = false
 
     switch resolution {
     case .inform(let message):

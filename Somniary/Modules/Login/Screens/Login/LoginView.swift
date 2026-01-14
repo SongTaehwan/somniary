@@ -54,18 +54,48 @@ struct LoginView: View {
                 Separator()
             }
 
-            TextInput("이메일 입력해주세요.", text: $viewModel.email)
-                .autocorrectionDisabled(true)
-                .keyboardType(.emailAddress)
-                .textInputAutocapitalization(.never)
+            VStack {
+                TextInput("이메일 입력해주세요.", text: $viewModel.email)
+                    .autocorrectionDisabled(true)
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+
+                if viewModel.state.otpCodeRequired {
+                    VStack {
+                        TextInput("6자리 인증번호를 입력해주세요.", text: $viewModel.otpCode)
+                            .keyboardType(.numberPad)
+                            .maxLength(text: $viewModel.otpCode, limit: 6)
+
+                        Text("발송된 OTP 번호를 입력해주세요")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.caption1)
+                            .foregroundStyle(Asset.Colors.Text.secondary.swiftUIColor)
+                            .padding(.leading, 8)
+                    }
+                }
+
+                if let errorMessage = viewModel.state.errorMessage {
+                    Text(errorMessage)
+                        .typography(.errorMessage)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 8)
+                        .padding(.top, 8)
+                }
+            }
+
 
             Spacer()
 
             BaseButton("로그인") {
-                viewModel.send(.user(.loginTapped))
+                if viewModel.state.otpCodeRequired && viewModel.state.canSubmit {
+                    viewModel.send(.user(.submitLogin))
+                } else {
+                    viewModel.send(.user(.loginTapped))
+                }
             }
             .somniaryButtonStyle(.primary)
             .disabled(viewModel.email.isValidEmail == false)
+            .disabled(viewModel.state.otpCodeRequired && viewModel.state.canSubmit == false)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
