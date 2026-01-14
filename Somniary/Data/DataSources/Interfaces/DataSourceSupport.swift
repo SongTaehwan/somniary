@@ -70,8 +70,19 @@ extension DataSourceSupport {
             return error
         }
 
-        // 에러 응답 디코딩
-        guard let errorDto = try? JSONDecoder.shared.decode(NetError.self, from: data) else {
+        // PostgREST 에러 응답 디코딩
+        if let errorDto = try? JSONDecoder.shared.decode(NetError.self, from: data) {
+            let error = mapErrorCode(errorDto)
+
+            #if DEBUG
+            print("\(errorDto.deubgMessage)")
+            print("📄 [DataSourceError]: \(error)")
+            #endif
+            return error
+        }
+
+        // Supabase Auth 에러 응답 디코딩
+        guard let authErrorDto = try? JSONDecoder.shared.decode(NetAuthError.self, from: data) else {
             let error = mapHTTPStatusToError(failure.status)
             #if DEBUG
             print("📄 [Decoding Failed]: \(error)")
@@ -79,13 +90,141 @@ extension DataSourceSupport {
             return error
         }
 
-        let error = mapErrorCode(errorDto)
+        let error = mapErrorCode(authErrorDto)
 
         #if DEBUG
-        print("\(errorDto.deubgMessage)")
+        print("\(authErrorDto.deubgMessage)")
         print("📄 [DataSourceError]: \(error)")
         #endif
         return error
+    }
+
+    /// Supabase Auth 에러 코드 매핑
+    private func mapErrorCode(_ dto: NetAuthError) -> DataSourceError {
+        let code = dto.errorCode
+
+        switch code {
+        // MARK: - 401/unauthorized (token/credential issues)
+        case .noAuthorization:
+            return .unauthorized(.unauthorized)
+
+        case .invalidCredentials,
+             .badJwt,
+             .badCodeVerifier,
+             .refreshTokenNotFound,
+             .refreshTokenAlreadyUsed,
+             .unexpectedAudience:
+            return .unauthorized(.invalidToken)
+
+        case .sessionExpired,
+             .otpExpired,
+             .mfaChallengeExpired,
+             .flowStateExpired,
+             .samlRelayStateExpired:
+            return .unauthorized(.tokenExpired)
+
+        case .reauthenticationNeeded,
+             .reauthenticationNotValid:
+            return .unauthorized(.unauthorized)
+
+        // MARK: - 403/forbidden (policy/config/blocked)
+        case .notAdmin,
+             .userBanned,
+             .signupDisabled,
+             .userSsoManaged,
+             .anonymousProviderDisabled,
+             .emailProviderDisabled,
+             .phoneProviderDisabled,
+             .providerDisabled,
+             .otpDisabled,
+             .samlProviderDisabled,
+             .manualLinkingDisabled,
+             .singleIdentityNotDeletable,
+             .emailConflictIdentityNotDeletable,
+             .emailAddressNotAuthorized,
+             .providerEmailNeedsVerification,
+             .captchaFailed,
+             .insufficientAal,
+             .mfaPhoneEnrollNotEnabled,
+             .mfaPhoneVerifyNotEnabled,
+             .mfaTotpEnrollNotEnabled,
+             .mfaTotpVerifyNotEnabled,
+             .mfaWebAuthnEnrollNotEnabled,
+             .mfaWebAuthnVerifyNotEnabled:
+            return .forbidden(.forbidden)
+
+        case .emailNotConfirmed,
+             .phoneNotConfirmed:
+            // 사용자의 추가 액션(인증/확인)이 필요한 케이스
+            return .forbidden(.resourceForbidden)
+
+        // MARK: - 404/not found
+        case .userNotFound,
+             .identityNotFound,
+             .inviteNotFound,
+             .flowStateNotFound,
+             .sessionNotFound,
+             .ssoProviderNotFound,
+             .samlIdpNotFound,
+             .samlRelayStateNotFound:
+            return .resource(.notFound)
+
+        // MARK: - 409/conflict
+        case .conflict,
+             .emailExists,
+             .phoneExists,
+             .userAlreadyExists,
+             .identityAlreadyExists,
+             .ssoDomainAlreadyExists,
+             .samlIdpAlreadyExists,
+             .mfaFactorNameConflict,
+             .mfaVerifiedFactorExists:
+            return .resource(.conflict)
+
+        // MARK: - 400/invalid request (request/validation)
+        case .badJson,
+             .badOauthCallback,
+             .badOauthState,
+             .oauthProviderNotSupported,
+             .emailAddressInvalid,
+             .validationFailed,
+             .weakPassword,
+             .samePassword,
+             .otpDisabled, // 중복되어도 harmless (위 forbidden에서 이미 처리됨)
+             .mfaFactorNotFound,
+             .mfaIpAddressMismatch,
+             .mfaVerificationFailed,
+             .mfaVerificationRejected,
+             .tooManyEnrolledMfaFactors,
+             .samlAssertionNoEmail,
+             .samlAssertionNoUserId,
+             .samlEntityIdMismatch:
+            return .client(.invalidRequest)
+
+        // MARK: - 429/rate limit (fallback)
+        case .overEmailSendRateLimit,
+             .overRequestRateLimit,
+             .overSmsSendRateLimit:
+            // DataSourceError에 별도 케이스가 없으므로, 일시적 장애(재시도 가치)로 분류
+            return .server(.serviceUnavailable)
+
+        // MARK: - 408/504 timeout
+        case .requestTimeout,
+             .hookTimeout,
+             .hookTimeoutAfterRetry:
+            return .server(.gatewayTimeout)
+
+        // MARK: - 500-ish server side
+        case .unexpectedFailure,
+             .smsSendFailed,
+             .hookPayloadInvalidContentType,
+             .hookPayloadOverSizeLimit,
+             .samlMetadataFetchFailed:
+            return .server(.serverError)
+
+        case .unknown(let raw):
+            return .invariantViolation(reason: "Unhandled Auth Error Code: \(raw)")
+        }
     }
 
     /// PostgREST 에러 코드 매핑
