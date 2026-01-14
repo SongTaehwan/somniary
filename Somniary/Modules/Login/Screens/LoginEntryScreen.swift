@@ -1,5 +1,5 @@
 //
-//  LoginView.swift
+//  LoginEntryScreen.swift
 //  Somniary
 //
 //  Created by 송태환 on 9/11/25.
@@ -8,7 +8,7 @@
 import SwiftUI
 import AuthenticationServices
 
-struct LoginView: View {
+struct LoginEntryScreen: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
@@ -110,5 +110,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(viewModel: AppContainer.shared.makeLoginViewModel(nil))
+    LoginEntryScreen(viewModel: AppContainer.shared.makeLoginViewModel(nil))
 }

@@ -29,7 +29,6 @@ struct LoginEffectPlan: EffectPlan {
         /// one-off navigations, ViewModel 에 의해 처리됨
         case navigateHome
         case navigateSignUp
-        case navigateOtpVerification
         case navigateSignupCompletion
     }
 
@@ -67,7 +66,7 @@ extension LoginEffectPlan {
     static func route(_ type: EffectType) -> Self {
         precondition({
             switch type {
-            case .navigateHome, .navigateSignUp, .navigateOtpVerification, .navigateSignupCompletion:
+            case .navigateHome, .navigateSignUp, .navigateSignupCompletion:
                 return true
             default:
                 return false

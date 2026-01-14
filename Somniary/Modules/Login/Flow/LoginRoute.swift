@@ -12,14 +12,12 @@ enum LoginRoute: Routable {
     case main
     /// 회원가입 화면
     case signup
-    /// 이메일 인증 화면
-    case verification
     /// 가입 완료 화면
     case completion
 
     var navigationType: NavigationType {
         switch self {
-        case .main, .verification, .signup, .completion: return .push
+        case .main, .signup, .completion: return .push
         }
     }
 }

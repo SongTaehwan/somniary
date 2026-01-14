@@ -197,9 +197,6 @@ final class LoginViewModel: ViewModelType {
             case .navigateSignUp:
                 self.coordinator.push(route: .signup)
 
-            case .navigateOtpVerification:
-                self.coordinator.push(route: .verification)
-
             case .navigateSignupCompletion:
                 self.coordinator.push(route: .completion)
 

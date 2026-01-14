@@ -38,16 +38,13 @@ final class LoginCoordinator: FlowCoordinator {
     func destination(for route: LoginRoute) -> some View {
         switch route {
         case .main:
-            LoginView(viewModel: self.loginViewModel)
+            LoginEntryScreen(viewModel: self.loginViewModel)
         case .signup:
             // Signup
-            SignUpView(viewModel: self.loginViewModel)
-        case .verification:
-            // SignupVerification
-            LoginVerificationView(viewModel: self.loginViewModel)
+            SignUpScreen(viewModel: self.loginViewModel)
         case .completion:
             // completion
-            SignUpCompletionView(viewModel: self.loginViewModel)
+            SignUpCompletionScreen(viewModel: self.loginViewModel)
         @unknown default:
             EmptyView()
         }
@@ -58,7 +55,7 @@ final class LoginCoordinator: FlowCoordinator {
             coordinator: self,
             navigationController: self.rootNavigationController
         ) {
-            LoginView(viewModel: self.loginViewModel)
+            LoginEntryScreen(viewModel: self.loginViewModel)
         }
     }
 }
