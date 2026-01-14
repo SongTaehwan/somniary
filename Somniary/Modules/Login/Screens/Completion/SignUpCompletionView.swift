@@ -11,19 +11,20 @@ struct SignUpCompletionView: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Spacer()
 
-            Text("🎉 환영합니다!")
-                .font(.title)
-                .fontWeight(.semibold)
+            Image(uiImage: Asset.Icons.congret.image)
+                .resizable()
+                .renderingMode(.original)
+                .frame(width: 147, height: 155)
 
-            VStack {
-                Text("오늘 📝일기를 적어볼까요?")
-                    .font(.title3)
-                Text("아래 버튼을 눌러주세요 ⬇️")
-                    .font(.title3)
+            VStack(spacing: 8) {
+                Text("환영합니다!")
+                Text("오늘의 꿈 일기를 들려주세요!")
             }
+            .font(.heading1)
+            .foregroundStyle(Asset.Colors.Text.primary.swiftUIColor)
 
             Spacer()
 
@@ -34,7 +35,9 @@ struct SignUpCompletionView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(20)
+        .background(Asset.Colors.Background.primary.swiftUIColor)
         .navigationTitle("회원 가입 완료")
+        .navigationBarBackButtonHidden()
     }
 }
 

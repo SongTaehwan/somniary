@@ -14,6 +14,7 @@ struct SomniaryApp: App {
     var body: some Scene {
         WindowGroup {
             coordinator.rootView
+                .colorScheme(.dark)
         }
     }
 }

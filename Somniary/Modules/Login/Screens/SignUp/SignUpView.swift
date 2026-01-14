@@ -73,7 +73,6 @@ struct SignUpView: View {
         .padding(.top, 50)
         .background(Asset.Colors.Background.primary.swiftUIColor)
         .navigationTitle("회원가입")
-        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 
